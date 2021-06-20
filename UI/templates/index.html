@@ -8,13 +8,10 @@
   <body>
     <div class="container">
       <div class="area" >
-        <ul class="circles">
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-        </ul>
+	<input type="radio" id="live" name="source" value="live">
+  	<label for="live">Live</label><br>
+        <input type="radio" id="cached" name="source" value="cached">
+        <label for="cached">From Link</label><br>
       </div >
       <div class="header"></div>
       <img class="frame" src="{{ url_for('video_feed') }}">
