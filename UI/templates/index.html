@@ -10,12 +10,16 @@
       <div class="area" >
 	<input type="radio" id="live" name="source" value="live">
   	<label for="live">Live</label><br>
-        <input type="radio" id="cached" name="source" value="cached">
+        <input type="radio" id="cached" name="source" value="cached" onclick="javascript:showSource();">
         <label for="cached">From Link</label><br>
-      </div >
+        <form id="sourceBox" style="visibility:visible" action="{{ url_for('handle_source') }}" method="post">
+          <input type="text" name="source_path" size="40">
+          <input type="submit"> 
+        </form>
+      </div> 
       <div class="header"></div>
       <img class="frame" src="{{ url_for('video_feed') }}">
-  </div>
-
+   </div>
+  <script src="script_src.js"/>
   </body>
 </html>
