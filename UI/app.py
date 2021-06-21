@@ -1,4 +1,4 @@
-from flask import Flask, Response, render_template
+from flask import Flask, Response, request, render_template
 from streamer import VideoStreamer
 
 app = Flask(__name__)
@@ -13,8 +13,16 @@ def video_feed():
 
 @app.route("/handle_source", methods=["POST"])
 def handle_source():
-    video_source = request.form["source_path"]
-    stream_client.set_source(video_source)
+    return Response(stream_client.set_source(request.form.get("source_path")), mimetype="multipart/x-mixed-replace; boundary=frame")
+
+@app.route("/get_source", methods=["GET"])
+def get_source():
+    return Response(stream_client.get_source(), mimetype="multipart/x-mixed-replace; boundary=frame")
+
+@app.route("/handle_radius", methods=["POST"])
+def handle_radius():
+    stream_client.set_radius(request.form.get("radius"))
+    return Response("ok")
 
 if __name__ == "__main__":
     stream_client = VideoStreamer()

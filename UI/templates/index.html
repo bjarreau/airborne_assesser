@@ -6,20 +6,37 @@
     <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Exo&amp;display=swap'>
   </head>
   <body>
-    <div class="container">
-      <div class="area" >
-	<input type="radio" id="live" name="source" value="live">
-  	<label for="live">Live</label><br>
-        <input type="radio" id="cached" name="source" value="cached" onclick="javascript:showSource();">
-        <label for="cached">From Link</label><br>
-        <form id="sourceBox" style="visibility:visible" action="{{ url_for('handle_source') }}" method="post">
-          <input type="text" name="source_path" size="40">
-          <input type="submit"> 
-        </form>
-      </div> 
-      <div class="header"></div>
-      <img class="frame" src="{{ url_for('video_feed') }}">
-   </div>
-  <script src="script_src.js"/>
+    <div class="tab">
+       <button class="tablinks active" onclick="openView(event, 'Live')">Live</button>
+       <button class="tablinks" onclick="openView(event, 'Link')">From Link</button>
+    </div>
+      <div id="Live" class="tabcontent" style="display:block">
+        <img id="liveFeed" class="frame" src="{{ url_for('video_feed') }}">        
+      </div>
+      <div id="Link" class="tabcontent">
+        <form id="sourceBox" action="{{ url_for('handle_source') }}" method="post">
+          <input type="text" name="source_path" size="40" value="https://youtu.be/WQeoO7MI0Bs">
+          <input type="submit">
+        </form>       
+        <img id="videoFeed" class="frame" src="{{ url_for('get_source') }}">        
+      </div>
+     <form id="radiusBox" action="{{ url_for('handle_radius') }}" method="post">
+          <input type="text" name="radius" size="40" value="6 ft">
+          <input type="submit">
+     </form>
+     <script>
+        function openView(event, type) {
+           var tabcontent = document.getElementsByClassName("tabcontent");
+           for (var i=0; i<tabcontent.length; i++) {
+              tabcontent[i].style.display = "none";
+           }
+           var tablinks = document.getElementsByClassName("tablinks");
+           for (var i=0; i<tablinks.length; i++) {
+              tablinks[i].className = tablinks[i].className.replace(" active", "");
+           }
+           document.getElementById(type).style.display = "block";
+           event.currentTarget.className += " active";
+        }
+     </script>
   </body>
 </html>
