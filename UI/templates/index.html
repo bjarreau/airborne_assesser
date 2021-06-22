@@ -7,6 +7,9 @@
   </head>
   <body>
     <div class="tab">
+      <form id="goLive" action="/" method="post">
+         <input type="hidden" name="live_feed" value="True"/>
+      </form>
       {% if active == "Live": %}
        <button class="tablinks active" onclick="openView(event, 'Live')">Live</button>
        <button class="tablinks" onclick="openView(event, 'Link')">From Link</button>
@@ -49,6 +52,9 @@
            }
            document.getElementById(type).style.display = "block";
            event.currentTarget.className += " active";
+           if (type == "Live") {
+              document.getElementById("goLive").submit()
+           }
         }
      </script>
   </body>

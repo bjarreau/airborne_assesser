@@ -10,6 +10,8 @@ def index():
     if request.form.get("source_path") != None:
         stream_client.set_source(request.form.get("source_path"))
     elif request.form.get("live_feed") != None:
+        print("Live feed requested")
+        stream_client.goLive()
         stream_client.generate()
     elif request.form.get("radius") != None:
         stream_client.set_radius(request.form.get("radius"))

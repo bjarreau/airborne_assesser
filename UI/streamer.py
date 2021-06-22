@@ -14,11 +14,10 @@ class VideoStreamer:
         self.footage_socket.setsockopt_string(zmq.SUBSCRIBE, np.unicode(''))
 
         self.active = "Live"
-        self.video = cv2.VideoCapture()
-        self.video.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        self.video.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
         self.radius_size = 6
         self.radius_uom = "ft"
+        self.paused = False
+        self.RebuildPlayer()
 
         self.client = "jetson"
         self.rtsp_port = 8554
@@ -26,6 +25,11 @@ class VideoStreamer:
         self.height = 720
         self.rtsp_frame = np.zeros((self.height, self.width, 3), np.uint8)
         self.heatmap = np.zeros((self.height, self.width, 3), np.uint8)
+
+    def RebuildPlayer(self):
+        self.video = cv2.VideoCapture()
+        self.video.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+        self.video.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
     def VideoCapture(self, uri, width, height, latency):
         self.active = "Live"
@@ -60,6 +64,16 @@ class VideoStreamer:
        print ("User submitted radius of {} {}.".format(self.radius_size, self.radius_uom))
        return
 
+    def pause(self):
+       self.paused = True
+
+    def play(self):
+       self.paused = False
+
+    def goLive(self):
+       self.active = "Live"
+       self.RebuildPlayer()
+
     def read(self):
         if self.active == "Live":
            rtsp_frame = self.rtsp_frame.copy()
@@ -76,11 +90,13 @@ class VideoStreamer:
            frame = cv2.addWeighted(self.rtsp_frame.copy(), 0.7, self.heatmap.copy(), 0.5, 0)
            return frame
         else:
-           check, frame = self.video.read()
-           return frame
+           if not self.paused:
+              check, frame = self.video.read()
+              return frame
+           else:
+              return frame
 
     def generate(self):
-        #self.active = "Live"
         while True:
             frame = self.read()
             flag, encodedImage = cv2.imencode(".jpg", frame)
