@@ -13,8 +13,10 @@ class VideoStreamer:
         self.footage_socket.connect('tcp://{}:{}'.format(self.host, self.zmq_port))
         self.footage_socket.setsockopt_string(zmq.SUBSCRIBE, np.unicode(''))
 
-        self.isLive = True
+        self.active = "Live"
         self.video = cv2.VideoCapture()
+        self.video.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+        self.video.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
         self.radius_size = 6
         self.radius_uom = "ft"
 
@@ -26,7 +28,7 @@ class VideoStreamer:
         self.heatmap = np.zeros((self.height, self.width, 3), np.uint8)
 
     def VideoCapture(self, uri, width, height, latency):
-        self.isLive = True
+        self.active = "Live"
         gst_str = ('rtspsrc location={} latency={} ! '
                 'rtph264depay ! h264parse ! omxh264dec ! '
                 'nvvidconv ! '
@@ -37,7 +39,7 @@ class VideoStreamer:
         return cv2.VideoCapture(gst_str, cv2.CAP_GSTREAMER)
 
     def set_source(self, source):
-       self.isLive = False
+       self.active = "Link"
        print(source)
        urlPafy = pafy.new(source)
        video = urlPafy.getbest(preftype="mp4")
@@ -48,14 +50,18 @@ class VideoStreamer:
     def get_source(self):
        return self.video
 
+    def get_active(self):
+       return self.active
+
     def set_radius(self, radius):
        parts = radius.split()
        self.radius_size = parts[0]
        self.radius_uom = parts[1]
+       print ("User submitted radius of {} {}.".format(self.radius_size, self.radius_uom))
        return
 
     def read(self):
-        if self.isLive:
+        if self.active == "Live":
            rtsp_frame = self.rtsp_frame.copy()
            heatmap = self.heatmap.copy()
 
@@ -74,6 +80,7 @@ class VideoStreamer:
            return frame
 
     def generate(self):
+        #self.active = "Live"
         while True:
             frame = self.read()
             flag, encodedImage = cv2.imencode(".jpg", frame)

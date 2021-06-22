@@ -7,19 +7,32 @@
   </head>
   <body>
     <div class="tab">
+      {% if active == "Live": %}
        <button class="tablinks active" onclick="openView(event, 'Live')">Live</button>
        <button class="tablinks" onclick="openView(event, 'Link')">From Link</button>
+      {% else %}
+       <button class="tablinks" onclick="openView(event, 'Live')">Live</button>
+       <button class="tablinks active" onclick="openView(event, 'Link')">From Link</button>
+      {% endif %}
     </div>
-      <div id="Live" class="tabcontent" style="display:block">
-        <img id="liveFeed" class="frame" src="{{ url_for('video_feed') }}">        
-      </div>
+      {% if active == "Live": %}
+      <div id="Live" class="tabcontent active"></div>
       <div id="Link" class="tabcontent">
-        <form id="sourceBox" action="/" method="post">
+        <form id="sourceBox" action="/" method="post" >
           <input type="text" name="source_path" size="40" value="https://youtu.be/eX2qFMC8cFo">
           <input type="submit">
         </form>       
-        <img id="videoFeed" class="frame" src="{{ url_for('get_source') }}">        
       </div>
+      {% else %}
+      <div id="Live" class="tabcontent"></div>
+      <div id="Link" class="tabcontent active" style="display:block">
+        <form id="sourceBox" action="/" method="post" >
+          <input type="text" name="source_path" size="40" value="https://youtu.be/eX2qFMC8cFo">
+          <input type="submit">
+        </form>       
+      </div>
+      {% endif %}
+     <img id="liveFeed" src="{{ url_for('video_feed') }}">     
      <form id="radiusBox" action="/" method="post">
           <input type="text" name="radius" size="40" value="6 ft">
           <input type="submit">

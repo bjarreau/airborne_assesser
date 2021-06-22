@@ -1,3 +1,5 @@
+
+
 from flask import Flask, Response, request, render_template
 from streamer import VideoStreamer
 
@@ -7,9 +9,11 @@ app = Flask(__name__)
 def index():
     if request.form.get("source_path") != None:
         stream_client.set_source(request.form.get("source_path"))
+    elif request.form.get("live_feed") != None:
+        stream_client.generate()
     elif request.form.get("radius") != None:
         stream_client.set_radius(request.form.get("radius"))
-    return render_template("index.html")
+    return render_template("index.html", active=stream_client.get_active())
 
 @app.route("/video_feed")
 def video_feed():
