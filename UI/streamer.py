@@ -14,11 +14,13 @@ class VideoStreamer:
         self.footage_socket.setsockopt_string(zmq.SUBSCRIBE, np.unicode(''))
         self.default_radius_size = 6
         self.default_radius_uom = "ft"
+        self.url = "https://www.youtube.com/watch?v=CmomQkOau7c"
 
         self.active = "Live"
         self.radius_size = 6
         self.radius_uom = "ft"
         self.paused = False
+        self.reverse = False
         self.message = None
         self.frame_max = 100
         self.RebuildPlayer()
@@ -37,9 +39,6 @@ class VideoStreamer:
         self.video = cv2.VideoCapture()
         self.video.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         self.video.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-        self.frame_max = int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
-        if self.frame_max > 0:
-            cv2.createTrackbar('frame', 'Video', 0, int(self.frame_max), self.getFrame)
 
     def VideoCapture(self, uri, width, height, latency):
         self.active = "Live"
@@ -54,15 +53,17 @@ class VideoStreamer:
 
     def set_source(self, source):
        self.active = "Link"
-       print(source)
+       self.url = source
        urlPafy = pafy.new(source)
        video = urlPafy.getbest(preftype="mp4")
-       print(video.url)
        self.video.open(video.url)
        return self.video
 
     def get_source(self):
        return self.video
+
+    def get_url(self):
+       return self.url
 
     def get_active(self):
        return self.active
@@ -78,8 +79,12 @@ class VideoStreamer:
        return
 
     def pause(self):
-       print("pause received")
        self.paused = not self.paused
+       return
+
+    def playReverse(self):
+       self.RebuildPlayer()
+       self.set_source(self.url)
        return
 
     def goLive(self):

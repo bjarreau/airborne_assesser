@@ -22,7 +22,7 @@
       <div id="Live" class="tabcontent active"></div>
       <div id="Link" class="tabcontent">
         <form id="sourceBox" action="/" method="post" >
-          <input type="text" name="source_path" size="40" value="https://youtu.be/Qh9Xxnilcfw">
+          <input type="text" name="source_path" size="40" value="{{ url }}">
           <input type="submit">
         </form>       
       </div>
@@ -30,15 +30,19 @@
       <div id="Live" class="tabcontent"></div>
       <div id="Link" class="tabcontent active" style="display:block">
         <form id="sourceBox" action="/" method="post" >
-          <input type="text" name="source_path" size="40" value="https://youtu.be/eX2qFMC8cFo">
+          <input type="text" name="source_path" size="40" value="{{ url }}">
           <input type="submit">
         </form>       
       </div>
       {% endif %}
-     <img id="liveFeed" src="{{ url_for('video_feed') }}">
+     <img id="liveFeed" src="{{ url_for('video_feed') }}"/>
      <form id="videoControls" action="/" method="post">
-         <input type="submit" text="||" name="pause" value="pause"/>
+         <input type="submit" name="replay" value="replay"/>
+         <button type="button" id="pause" onclick="changeText()"/>pause</button>
      </form>     
+      <form id="pauseForm" action="/" method="post">
+         <input type="hidden" name="pause" value="True"/>
+      </form>
      <form id="radiusBox" action="/" method="post">
           <input type="text" name="radius" size="40" value="6 ft">
           <input type="submit">
@@ -47,6 +51,15 @@
      <p><b>{{message}}</b></p>
      {% endif %} 
      <script>
+        function changeText() {
+            var text = document.getElementById("pause").innerHTML;
+            if (text == "pause") {
+               document.getElementById("pause").innerHTML = "play";
+            } else {
+               document.getElementById("pause").innerHTML = "pause";
+            }              
+            document.getElementById("pauseForm").submit();
+        }
         function openView(event, type) {
            var tabcontent = document.getElementsByClassName("tabcontent");
            for (var i=0; i<tabcontent.length; i++) {
@@ -59,7 +72,7 @@
            document.getElementById(type).style.display = "block";
            event.currentTarget.className += " active";
            if (type == "Live") {
-              document.getElementById("goLive").submit()
+              document.getElementById("goLive").submit();
            }
         }
      </script>
