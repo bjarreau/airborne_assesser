@@ -12,11 +12,15 @@ class VideoStreamer:
         self.zmq_port = 5555
         self.footage_socket.connect('tcp://{}:{}'.format(self.host, self.zmq_port))
         self.footage_socket.setsockopt_string(zmq.SUBSCRIBE, np.unicode(''))
+        self.default_radius_size = 6
+        self.default_radius_uom = "ft"
 
         self.active = "Live"
         self.radius_size = 6
         self.radius_uom = "ft"
         self.paused = False
+        self.message = None
+        self.frame_max = 100
         self.RebuildPlayer()
 
         self.client = "jetson"
@@ -26,10 +30,16 @@ class VideoStreamer:
         self.rtsp_frame = np.zeros((self.height, self.width, 3), np.uint8)
         self.heatmap = np.zeros((self.height, self.width, 3), np.uint8)
 
+    def getFrame(self):
+        self.video.set(cv2.CAP_PROP_POS_FRAMES, self.frame_max)
+
     def RebuildPlayer(self):
         self.video = cv2.VideoCapture()
         self.video.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         self.video.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        self.frame_max = int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
+        if self.frame_max > 0:
+            cv2.createTrackbar('frame', 'Video', 0, int(self.frame_max), self.getFrame)
 
     def VideoCapture(self, uri, width, height, latency):
         self.active = "Live"
@@ -57,18 +67,20 @@ class VideoStreamer:
     def get_active(self):
        return self.active
 
+    def get_message(self):
+       return self.message
+
     def set_radius(self, radius):
        parts = radius.split()
        self.radius_size = parts[0]
        self.radius_uom = parts[1]
-       print ("User submitted radius of {} {}.".format(self.radius_size, self.radius_uom))
+       self.message = "User submitted radius of {} {}.".format(self.radius_size, self.radius_uom)
        return
 
     def pause(self):
-       self.paused = True
-
-    def play(self):
-       self.paused = False
+       print("pause received")
+       self.paused = not self.paused
+       return
 
     def goLive(self):
        self.active = "Live"
@@ -90,18 +102,21 @@ class VideoStreamer:
            frame = cv2.addWeighted(self.rtsp_frame.copy(), 0.7, self.heatmap.copy(), 0.5, 0)
            return frame
         else:
-           if not self.paused:
-              check, frame = self.video.read()
-              return frame
-           else:
+           check, frame = self.video.read()
+           if check:
               return frame
 
     def generate(self):
+        encodedImage = None
         while True:
-            frame = self.read()
-            flag, encodedImage = cv2.imencode(".jpg", frame)
-            if not flag:
-                continue
-            yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
-                bytearray(encodedImage) + b'\r\n')
+           if not self.paused:
+              frame = self.read()
+              flag, self.encodedImage = cv2.imencode(".jpg", frame)
+              if not flag:
+                 continue
+              yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
+                 bytearray(self.encodedImage) + b'\r\n')
+           else:
+               yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
+                 bytearray(self.encodedImage) + b'\r\n')
         return
