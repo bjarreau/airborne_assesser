@@ -3,6 +3,10 @@ import cv2
 import zmq
 import pafy
 import numpy as np
+from os import getenv
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class VideoStreamer:
     def __init__(self):
@@ -12,13 +16,13 @@ class VideoStreamer:
         self.zmq_port = 5555
         self.footage_socket.connect('tcp://{}:{}'.format(self.host, self.zmq_port))
         self.footage_socket.setsockopt_string(zmq.SUBSCRIBE, np.unicode(''))
-        self.default_radius_size = 6
-        self.default_radius_uom = "ft"
+        self.default_radius_size = getenv('DEFAULT_RADIUS')
+        self.default_radius_uom = getenv('DEFAULT_RADIUS_UOM')
         self.url = "https://www.youtube.com/watch?v=CmomQkOau7c"
 
         self.active = "Live"
-        self.radius_size = 6
-        self.radius_uom = "ft"
+        self.radius_size = getenv('DEFAULT_RADIUS')
+        self.radius_uom = getenv('DEFAULT_RADIUS_UOM')
         self.paused = False
         self.reverse = False
         self.message = None
@@ -59,6 +63,12 @@ class VideoStreamer:
        self.video.open(video.url)
        return self.video
 
+    def reset(self):
+       self.radius_size = self.default_radius_size
+       self.radius_uom  = self.default_radius_uom
+       self.message = "User submitted radius of {} {}.".format(self.radius_size, self.radius_uom)
+       return "{} {}".format(self.radius_size, self.radius_uom)
+
     def get_source(self):
        return self.video
 
@@ -77,6 +87,9 @@ class VideoStreamer:
        self.radius_uom = parts[1]
        self.message = "User submitted radius of {} {}.".format(self.radius_size, self.radius_uom)
        return
+
+    def get_radius(self):
+       return "{} {}".format(self.radius_size, self.radius_uom)
 
     def pause(self):
        self.paused = not self.paused

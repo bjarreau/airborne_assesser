@@ -44,8 +44,9 @@
          <input type="hidden" name="pause" value="True"/>
       </form>
      <form id="radiusBox" action="/" method="post">
-          <input type="text" name="radius" size="40" value="6 ft">
+          <input type="text" name="radius" size="40" value="{{ radius }}">
           <input type="submit">
+          <input type="submit" name="reset" value="reset"/>
      </form>
      {% if message != None %}
      <p><b>{{message}}</b></p>

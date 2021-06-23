@@ -12,13 +12,19 @@ def index():
     elif request.form.get("live_feed") != None:
         stream_client.goLive()
         stream_client.generate()
+    elif request.form.get("reset") != None:
+        stream_client.reset()
     elif request.form.get("radius") != None:
         stream_client.set_radius(request.form.get("radius"))
     elif request.form.get("pause") != None:
         stream_client.pause()
     elif request.form.get("replay") != None:
         stream_client.playReverse()
-    return render_template("index.html", active=stream_client.get_active(), message=stream_client.get_message(), url=stream_client.get_url())
+    return render_template("index.html", 
+      active=stream_client.get_active(), 
+      message=stream_client.get_message(), 
+      url=stream_client.get_url(),
+      radius=stream_client.get_radius())
 
 @app.route("/video_feed")
 def video_feed():
