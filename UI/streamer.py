@@ -15,10 +15,14 @@ class VideoStreamer:
         self.context = zmq.Context()
         self.default_radius_size = getenv('DEFAULT_RADIUS')
         self.default_radius_uom = getenv('DEFAULT_RADIUS_UOM')
+        self.default_duration = getenv('DEFAULT_DURATION')
+        self.default_duration_uom = getenv('DEFAULT_DURATION_UOM')
         self.url = "https://www.youtube.com/watch?v=CmomQkOau7c"
         self.active = "Live"
         self.radius_size = getenv('DEFAULT_RADIUS')
         self.radius_uom = getenv('DEFAULT_RADIUS_UOM')
+        self.duration = getenv('DEFAULT_DURATION')
+        self.duration_uom = getenv('DEFAULT_DURATION_UOM')
         self.paused = False
         self.reverse = False
         self.message = None
@@ -71,8 +75,11 @@ class VideoStreamer:
     def reset(self):
        self.radius_size = self.default_radius_size
        self.radius_uom  = self.default_radius_uom
-       self.message = "User submitted radius of {} {}.".format(self.radius_size, self.radius_uom)
-       return "{} {}".format(self.radius_size, self.radius_uom)
+       self.duration = self.default_duration
+       self.duration_uom  = self.default_duration_uom
+       self.message = "User submitted radius of {} {} and duration of {} {}."
+           .format(self.radius_size, self.radius_uom, self.duration, self.duration_uom)
+       return "{} {}".format(self.radius_size, self.radius_uom, self.duration, self.duration_uom)
 
     def get_source(self):
        return self.video
@@ -90,11 +97,23 @@ class VideoStreamer:
        parts = radius.split()
        self.radius_size = parts[0]
        self.radius_uom = parts[1]
-       self.message = "User submitted radius of {} {}.".format(self.radius_size, self.radius_uom)
+       self.message = "User submitted radius of {} {} and duration of {} {}."
+           .format(self.radius_size, self.radius_uom, self.duration, self.duration_uom)
        return
 
     def get_radius(self):
        return "{} {}".format(self.radius_size, self.radius_uom)
+
+    def set_duration(self, duration):
+       parts = duration.split()
+       self.duration = parts[0]
+       self.duration_uom = parts[1]
+       self.message = "User submitted radius of {} {} and duration of {} {}."
+           .format(self.radius_size, self.radius_uom, self.duration, self.duration_uom)
+       return
+
+    def get_duration(self):
+       return "{} {}".format(self.duration, self.duration_uom)
 
     def pause(self):
        self.paused = not self.paused

@@ -16,6 +16,7 @@ def index():
         stream_client.reset()
     elif request.form.get("radius") != None:
         stream_client.set_radius(request.form.get("radius"))
+        stream_client.set_duration(request.form.get("duration"))
     elif request.form.get("pause") != None:
         stream_client.pause()
     elif request.form.get("replay") != None:
