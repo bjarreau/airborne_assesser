@@ -32,7 +32,7 @@ class VideoStreamer:
         self.height = 720
         self.rtsp_frame = np.zeros((self.height, self.width, 3), np.uint8)
         self.heatmap = np.zeros((self.height, self.width, 3), np.uint8)
-        threading.Thread(target=self.update_live_frame).start()
+        #threading.Thread(target=self.update_live_frame).start()
 
     def update_live_frame(self):
         if self.active == "Live":
