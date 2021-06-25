@@ -44,10 +44,12 @@
          <input type="hidden" name="pause" value="True"/>
       </form>
      <form id="radiusBox" action="/" method="post">
+          <label>radius: </label>
           <input type="text" name="radius" size="30" value="{{ radius }}">
-	  <input type="text" name="duration" size="30" value="{{ duration }}">
+	  <label>duration: </label>
+          <input type="text" name="duration" size="30" value="{{ duration }}">
           <input type="submit">
-          <input type="submit" name="reset" value="reset"/>
+          <input type="submit" name="Reset" value="Reset"/>
      </form>
      {% if message != None %}
      <p><b>{{message}}</b></p>

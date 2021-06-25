@@ -12,7 +12,7 @@ def index():
     elif request.form.get("live_feed") != None:
         stream_client.goLive()
         stream_client.generate()
-    elif request.form.get("reset") != None:
+    elif request.form.get("Reset") != None:
         stream_client.reset()
     elif request.form.get("radius") != None:
         stream_client.set_radius(request.form.get("radius"))
@@ -25,7 +25,8 @@ def index():
       active=stream_client.get_active(), 
       message=stream_client.get_message(), 
       url=stream_client.get_url(),
-      radius=stream_client.get_radius())
+      radius=stream_client.get_radius(),
+      duration=stream_client.get_duration())
 
 @app.route("/video_feed")
 def video_feed():

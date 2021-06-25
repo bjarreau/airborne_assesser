@@ -77,8 +77,8 @@ class VideoStreamer:
        self.radius_uom  = self.default_radius_uom
        self.duration = self.default_duration
        self.duration_uom  = self.default_duration_uom
-       self.message = "User submitted radius of {} {} and duration of {} {}."
-           .format(self.radius_size, self.radius_uom, self.duration, self.duration_uom)
+       self.message = "User submitted radius of {} {} and duration of {} {}." \
+       .format(self.radius_size, self.radius_uom, self.duration, self.duration_uom)
        return "{} {}".format(self.radius_size, self.radius_uom, self.duration, self.duration_uom)
 
     def get_source(self):
@@ -97,8 +97,8 @@ class VideoStreamer:
        parts = radius.split()
        self.radius_size = parts[0]
        self.radius_uom = parts[1]
-       self.message = "User submitted radius of {} {} and duration of {} {}."
-           .format(self.radius_size, self.radius_uom, self.duration, self.duration_uom)
+       self.message = "User submitted radius of {} {} and duration of {} {}." \
+       .format(self.radius_size, self.radius_uom, self.duration, self.duration_uom)
        return
 
     def get_radius(self):
@@ -108,8 +108,8 @@ class VideoStreamer:
        parts = duration.split()
        self.duration = parts[0]
        self.duration_uom = parts[1]
-       self.message = "User submitted radius of {} {} and duration of {} {}."
-           .format(self.radius_size, self.radius_uom, self.duration, self.duration_uom)
+       self.message = "User submitted radius of {} {} and duration of {} {}." \
+       .format(self.radius_size, self.radius_uom, self.duration, self.duration_uom)
        return
 
     def get_duration(self):
