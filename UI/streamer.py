@@ -1,4 +1,3 @@
-
 import cv2
 import zmq
 import pafy
@@ -27,42 +26,27 @@ class VideoStreamer:
         self.reverse = False
         self.message = None
         self.frame_max = 100
-        self.RebuildPlayer()
+        self.video = None
+        #self.generate()
         self.width = 1280
         self.height = 720
-        self.rtsp_frame = np.zeros((self.height, self.width, 3), np.uint8)
         self.heatmap = np.zeros((self.height, self.width, 3), np.uint8)
-        #threading.Thread(target=self.update_live_frame).start()
-
-    def update_live_frame(self):
-        if self.active == "Live":
-            cap = None
-            while True:
-                if not cap:
-                    cap = self.VideoCapture(1, self.width, self.height)
-                success, frame = cap.read()
-                if not success:
-                    cap = None
-                    time.sleep(0.5)
-
-                if frame is not None:
-                    self.rtsp_frame = frame
 
     def getFrame(self):
         self.video.set(cv2.CAP_PROP_POS_FRAMES, self.frame_max)
 
     def RebuildPlayer(self):
-        self.video = cv2.VideoCapture()
+        self.paused = False
+        if self.video is not None:
+           self.video.release()
+        if self.active == "Live":
+           print("set live stream")
+           self.video = cv2.VideoCapture(-1)
+           self.generate()
+        else:
+           self.video = cv2.VideoCapture()
         self.video.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         self.video.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-
-    def VideoCapture(self, dev, width, height):
-        self.active = "Live"
-        gst_str = ('v4l2src device=/dev/video{} ! '
-                'video/x-raw, width=(int){}, height=(int){}, '
-                'format=(string)RGB ! '
-                'videoconvert ! appsink').format(dev, width, height)
-        return cv2.VideoCapture(gst_str, cv2.CAP_GSTREAMER)
 
     def set_source(self, source):
        self.active = "Link"
@@ -125,16 +109,14 @@ class VideoStreamer:
        return
 
     def goLive(self):
+       print("Called goLive")
        self.active = "Live"
        self.RebuildPlayer()
 
     def read(self):
-        if self.active == "Live":
-           return self.rtsp_frame.copy()
-        else:
-           check, frame = self.video.read()
-           if check:
-              return frame
+       check, frame = self.video.read()
+       if check:
+          return frame
 
     def generate(self):
         while True:

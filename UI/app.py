@@ -11,7 +11,6 @@ def index():
         stream_client.set_source(request.form.get("source_path"))
     elif request.form.get("live_feed") != None:
         stream_client.goLive()
-        stream_client.generate()
     elif request.form.get("Reset") != None:
         stream_client.reset()
     elif request.form.get("radius") != None:
@@ -21,6 +20,8 @@ def index():
         stream_client.pause()
     elif request.form.get("replay") != None:
         stream_client.playReverse()
+    else:
+        stream_client.goLive()
     return render_template("index.html", 
       active=stream_client.get_active(), 
       message=stream_client.get_message(), 

@@ -36,10 +36,17 @@
       </div>
       {% endif %}
      <img id="liveFeed" src="{{ url_for('video_feed') }}"/>
-     <form id="videoControls" action="/" method="post">
+     {% if active == "Live": %}
+     <form id="videoControls" style="display:none" action="/" method="post">
          <input type="submit" name="replay" value="replay"/>
          <button type="button" id="pause" onclick="changeText()"/>pause</button>
-     </form>     
+     </form>
+     {% else %}
+     <form id="videoControls" style="display:block" action="/" method="post">
+         <input type="submit" name="replay" value="replay"/>
+         <button type="button" id="pause" onclick="changeText()"/>pause</button>
+     </form>
+     {% endif %}     
       <form id="pauseForm" action="/" method="post">
          <input type="hidden" name="pause" value="True"/>
       </form>
