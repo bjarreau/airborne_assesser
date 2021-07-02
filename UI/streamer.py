@@ -118,7 +118,7 @@ class VideoStreamer:
        if check:
           return frame
 
-    def process_faces(self, face_locations, frame):
+    def process_faces(self, face_locations, small_frame, frame):
         for location in face_locations:
             top, right, bottom, left = location
             face_image = small_frame[top:bottom, left:right]
@@ -136,7 +136,10 @@ class VideoStreamer:
               # Convert the image from BGR color
               rgb_small_frame = small_frame[:, :, ::-1]
               face_locations = face_recognition.face_locations(rgb_small_frame)
-              frame = self.process_faces(face_locations, frame)
+              if len(face_locations) > 0:
+                  frame = self.process_faces(face_locations, small_frame, frame)
+              else:
+                  print("None found!")
               
               flag, self.encodedImage = cv2.imencode(".jpg", frame)
               if not flag:
