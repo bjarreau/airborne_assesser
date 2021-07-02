@@ -4,10 +4,20 @@ import pafy
 import numpy as np
 import threading
 import time
+import face_recognition
 from os import getenv
 from dotenv import load_dotenv
 
 load_dotenv()
+face_detector = dlib.get_frontal_face_detector()
+predictor_68_point_model = face_recognition_models.pose_predictor_model_location()
+pose_predictor_68_point = dlib.shape_predictor(predictor_68_point_model)
+predictor_5_point_model = face_recognition_models.pose_predictor_five_point_model_location()
+pose_predictor_5_point = dlib.shape_predictor(predictor_5_point_model)
+cnn_face_detection_model = face_recognition_models.cnn_face_detector_model_location()
+cnn_face_detector = dlib.cnn_face_detection_model_v1(cnn_face_detection_model)
+face_recognition_model = face_recognition_models.face_recognition_model_location()
+face_encoder = dlib.face_recognition_model_v1(face_recognition_model)
 
 class VideoStreamer:
     def __init__(self):
@@ -27,7 +37,6 @@ class VideoStreamer:
         self.message = None
         self.frame_max = 100
         self.video = None
-        #self.generate()
         self.width = 1280
         self.height = 720
         self.heatmap = np.zeros((self.height, self.width, 3), np.uint8)
@@ -118,10 +127,26 @@ class VideoStreamer:
        if check:
           return frame
 
+    def process_faces(face_locations, frame):
+        for location in face_locations:
+            top, right, bottom, left = location
+            face_image = small_frame[top:bottom, left:right]
+            face_image = cv2.resize(face_image, (150, 150))
+            cv2.rectangle(frame, (left*4, top*4), (right*4, bottom*4), (0, 0, 255), 2)
+        return frame
+
     def generate(self):
         while True:
            if not self.paused:
               frame = self.read()
+              # Resize frame to save compute time
+              small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
+             
+              # Convert the image from BGR color
+              rgb_small_frame = small_frame[:, :, ::-1]
+              face_locations = face_recognition.face_locations(rgb_small_frame)
+              frame = self.process_faces(face_locations, frame)
+              
               flag, self.encodedImage = cv2.imencode(".jpg", frame)
               if not flag:
                  continue
