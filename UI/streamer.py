@@ -123,7 +123,7 @@ class VideoStreamer:
             top, right, bottom, left = location
             face_image = small_frame[top:bottom, left:right]
             face_image = cv2.resize(face_image, (150, 150))
-            cv2.rectangle(frame, (left*4, top*4), (right*4, bottom*4), (0, 0, 255), 2)
+            cv2.rectangle(frame, (left*2, top*2), (right*2, bottom*2), (0, 0, 255), 2)
         return frame
 
     def generate(self):
@@ -131,16 +131,14 @@ class VideoStreamer:
            if not self.paused:
               frame = self.read()
               # Resize frame to save compute time
-              small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
-             
+              small_frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
+
               # Convert the image from BGR color
               rgb_small_frame = small_frame[:, :, ::-1]
               face_locations = face_recognition.face_locations(rgb_small_frame)
               if len(face_locations) > 0:
                   frame = self.process_faces(face_locations, small_frame, frame)
-              else:
-                  print("None found!")
-              
+
               flag, self.encodedImage = cv2.imencode(".jpg", frame)
               if not flag:
                  continue
