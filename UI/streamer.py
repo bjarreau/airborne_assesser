@@ -51,6 +51,7 @@ class VideoStreamer:
     def set_source(self, source):
        self.active = "Link"
        self.url = source
+       self.RebuildPlayer()
        urlPafy = pafy.new(source)
        video = urlPafy.getbest(preftype="mp4")
        self.video.open(video.url)
