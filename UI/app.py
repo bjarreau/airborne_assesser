@@ -1,5 +1,3 @@
-
-
 from flask import Flask, Response, request, render_template
 from streamer import VideoStreamer
 
