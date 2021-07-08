@@ -7,8 +7,15 @@ import time
 import face_recognition
 from os import getenv
 from dotenv import load_dotenv
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+from tensorflow.keras.preprocessing.image import img_to_array
+from tensorflow.keras.models import load_model
 
 load_dotenv()
+prototxtPath = os.path.sep.join("face_detector", "deploy.prototxt"])
+weightsPath = os.path.sep.join("face_detector", "res10_300x300_ssd_iter_140000.caffemodel"])
+maskNet = load_model("model/mask_detect.model")
+faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
 
 class VideoStreamer:
     def __init__(self):
@@ -119,26 +126,29 @@ class VideoStreamer:
        if check:
           return frame
 
-    def process_faces(self, face_locations, small_frame, frame):
-        for location in face_locations:
+    def process_faces(self, face_locations, predictions, frame):
+        for location, pred in zip(face_locations, predictions):
             top, right, bottom, left = location
-            face_image = small_frame[top:bottom, left:right]
-            face_image = cv2.resize(face_image, (150, 150))
-            cv2.rectangle(frame, (left*2, top*2), (right*2, bottom*2), (0, 0, 255), 2)
+            (mask, naked) = pred
+           
+            label = "Mask" if mask > withoutMask else "No Mask"
+            color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
+
+            # include the probability in the label
+            label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
+
+            cv2.putText(frame, label, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
+            cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
         return frame
 
     def generate(self):
         while True:
            if not self.paused:
               frame = self.read()
-              # Resize frame to save compute time
-              small_frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
-
-              # Convert the image from BGR color
-              rgb_small_frame = small_frame[:, :, ::-1]
-              face_locations = face_recognition.face_locations(rgb_small_frame)
-              if len(face_locations) > 0:
-                  frame = self.process_faces(face_locations, small_frame, frame)
+              frame = imutils.resize(frame, width=400)
+              (locs, preds) = detect_and_predict_mask(frame, faceNet, maskNet)
+              if len(locs) > 0:
+                  frame = self.process_faces(locs, preds, frame)
 
               flag, self.encodedImage = cv2.imencode(".jpg", frame)
               if not flag:
