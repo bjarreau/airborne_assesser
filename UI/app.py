@@ -40,6 +40,8 @@ def detect_motion():
     global livestream, outframe, lock
     while True:
         frame = livestream.read()
+        if frame is None:
+                continue
         with lock:
             outframe = frame.copy()
 
@@ -63,6 +65,6 @@ if __name__ == "__main__":
     t = threading.Thread(target=detect_motion)
     t.daemon = True
     t.start()
-    app.run(debug=True, host="0.0.0.0", port=8080)
+    app.run(debug=True, host="0.0.0.0", port=8080, threaded=True, use_reloader=False)
 
 livestream.stop()
