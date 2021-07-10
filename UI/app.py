@@ -37,10 +37,6 @@ def index():
 def video_feed():
     return Response(stream_client.generate(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
-@app.route("/get_source", methods=["GET"])
-def get_source():
-    return Response(stream_client.get_source(), mimetype="multipart/x-mixed-replace; boundary=frame")
-
 if __name__ == "__main__":
     stream_client = VideoStreamer(livestream)
     t = threading.Thread(target=stream_client.detect_motion)

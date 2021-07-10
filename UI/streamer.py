@@ -37,26 +37,28 @@ class VideoStreamer:
         self.reverse = False
         self.message = None
         self.frame_max = 100
-        self.video = self.RebuildPlayer()
+        #self.video = self.RebuildPlayer()
         self.livestream = livestream
         self.width = 1280
         self.height = 720
         self.heatmap = np.zeros((self.height, self.width, 3), np.uint8)
 
-    def RebuildPlayer(self):
-        self.paused = False
-        self.video = cv2.VideoCapture()
-        self.video.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        self.video.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    #def RebuildPlayer(self):
+    #    self.paused = False
+    #    urlPafy = pafy.new(self.url)
+    #    video = urlPafy.getbest(preftype="mp4")
+    #    self.video = cv2.VideoCapture(video.url)
+    #    self.video.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    #    self.video.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
     def set_source(self, source):
        self.active = "Link"
        self.url = source
-       self.RebuildPlayer()
-       urlPafy = pafy.new(source)
-       video = urlPafy.getbest(preftype="mp4")
-       self.video.open(video.url)
-       return self.video
+       #self.RebuildPlayer()
+       #urlPafy = pafy.new(source)
+       #video = urlPafy.getbest(preftype="mp4")
+       #self.video.open(video.url)
+       #return self.video
 
     def reset(self):
        self.radius_size = self.default_radius_size
@@ -103,12 +105,10 @@ class VideoStreamer:
 
     def pause(self):
        self.paused = not self.paused
-       return
 
     def playReverse(self):
-       self.RebuildPlayer()
+       #self.RebuildPlayer()
        self.set_source(self.url)
-       return
 
     def goLive(self):
        print("Called goLive")
@@ -119,8 +119,8 @@ class VideoStreamer:
         while True:
             if self.active == "Live":
                 frame = self.livestream.read()
-            else:
-                check, frame = self.video.read()
+            #else:
+            #    check, frame = self.video.read()
             
             if frame is None:
                 continue
