@@ -1,20 +1,22 @@
+
 import cv2
 import zmq
 import pafy
 import numpy as np
 import threading
 import time
-import face_recognition
 from os import getenv
+import os
+from VideoStream import VideoStream
 from dotenv import load_dotenv
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 
 load_dotenv()
-prototxtPath = os.path.sep.join("../model/face_detector", "deploy.prototxt"])
-weightsPath = os.path.sep.join("../model/face_detector", "res10_300x300_ssd_iter_140000.caffemodel"])
-maskNet = load_model("../model/mask_detect.model")
+prototxtPath = os.path.sep.join(["./model/face_detector", "deploy.prototxt"])
+weightsPath = os.path.sep.join(["./model/face_detector", "res10_300x300_ssd_iter_140000.caffemodel"])
+maskNet = load_model("./model/mask_detect.model")
 faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
 
 class VideoStreamer:
@@ -34,24 +36,15 @@ class VideoStreamer:
         self.reverse = False
         self.message = None
         self.frame_max = 100
-        self.video = None
+        self.video = self.RebuildPlayer()
+        self.livestream = VideoStream().start()
         self.width = 1280
         self.height = 720
         self.heatmap = np.zeros((self.height, self.width, 3), np.uint8)
 
-    def getFrame(self):
-        self.video.set(cv2.CAP_PROP_POS_FRAMES, self.frame_max)
-
     def RebuildPlayer(self):
         self.paused = False
-        if self.video is not None:
-           self.video.release()
-        if self.active == "Live":
-           print("set live stream")
-           self.video = cv2.VideoCapture(-1)
-           self.generate()
-        else:
-           self.video = cv2.VideoCapture()
+        self.video = cv2.VideoCapture()
         self.video.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         self.video.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
@@ -119,18 +112,12 @@ class VideoStreamer:
     def goLive(self):
        print("Called goLive")
        self.active = "Live"
-       self.RebuildPlayer()
-
-    def read(self):
-       check, frame = self.video.read()
-       if check:
-          return frame
 
     def process_faces(self, face_locations, predictions, frame):
         for location, pred in zip(face_locations, predictions):
             top, right, bottom, left = location
             (mask, naked) = pred
-           
+
             label = "Mask" if mask > withoutMask else "No Mask"
             color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
 
@@ -151,7 +138,7 @@ class VideoStreamer:
         preds = []
         for i in range(0, detections.shape[2]):
             confidence = detections[0, 0, i, 2]
-            (startX, startY, endX, endY) = detections[0, 0, i, 3:7] * np.array([w, h, w, h]).astype("int")
+            (startX, startY, endX, endY) = (detections[0, 0, i, 3:7] * np.array([w, h, w, h])).astype("int")
             (startX, startY) = (max(0, startX), max(0, startY))
             (endX, endY) = (min(w - 1, endX), min(h - 1, endY))
             face = frame[startY:endY, startX:endX]
@@ -169,18 +156,24 @@ class VideoStreamer:
     def generate(self):
         while True:
            if not self.paused:
-              frame = self.read()
-              frame = imutils.resize(frame, width=400)
-              (locs, preds) = self.detect_and_predict_mask(frame, faceNet, maskNet)
-              if len(locs) > 0:
-                  frame = self.process_faces(locs, preds, frame)
+              if self.active == "Live":
+                  frame = self.livestream.read()
+              else:
+                  check, frame = self.video.read()
+              if frame is None:
+                  continue
+              #    (h, w) = frame.shape[:2]
+              #    scale = 400/float(w)
+              #    small_frame = cv2.resize(frame, (400, int(h*scale)), interpolation=cv2.INTER_AREA)
+              #    (locs, preds) = self.detect_and_predict_mask(small_frame, faceNet, maskNet)
+              #    if len(locs) > 0:
+              #        frame = self.process_faces(locs, preds, small_frame)
 
               flag, self.encodedImage = cv2.imencode(".jpg", frame)
-              if not flag:
-                 continue
               yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
                  bytearray(self.encodedImage) + b'\r\n')
            else:
                yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
                  bytearray(self.encodedImage) + b'\r\n')
+        self.livestream.stop()
         return
