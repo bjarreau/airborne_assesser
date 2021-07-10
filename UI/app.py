@@ -64,7 +64,7 @@ def index():
     else:
         active = "Live"
     return render_template("index.html", 
-      active=active, message=message, url=url, radius=get_radius(), duration=getDuration())
+      active=active, message=message, url=url, radius=get_radius(), duration=get_duration())
 
 def reset():
     global radius_size, radius_uom, duration, duration_uom, message
@@ -85,7 +85,7 @@ def set_radius(radius):
 def get_radius():
     return "{} {}".format(radius_size, radius_uom)
 
-def set_duration(self, new_duration):
+def set_duration(new_duration):
     global duration, duration_uom, message
     parts = new_duration.split()
     duration = parts[0]
@@ -93,7 +93,7 @@ def set_duration(self, new_duration):
     message = "User submitted radius of {} {} and duration of {} {}." \
     .format(radius_size, radius_uom, duration, duration_uom)
 
-def get_duration(self):
+def get_duration():
     return "{} {}".format(duration, duration_uom)
 
 def detect_motion():
