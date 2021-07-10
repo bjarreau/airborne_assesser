@@ -121,6 +121,9 @@ class VideoStreamer:
             else:
                 check, frame = self.video.read()
             
+            if frame is None:
+                continue
+            
             (h, w) = frame.shape[:2]
             scale = 400/float(w)
             frame = cv2.resize(frame, (400, int(h*scale)), interpolation=cv2.INTER_AREA)
