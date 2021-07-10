@@ -113,7 +113,7 @@ class VideoStreamer:
        self.active = "Live"
 
     def detect_motion(self):
-        global outputFrame
+        global outframe
 
         while True:
             if self.active == "Live":
@@ -127,7 +127,7 @@ class VideoStreamer:
               #    (locs, preds) = self.detect_and_predict_mask(frame, faceNet, maskNet)
               #    if len(locs) > 0:
               #        frame = self.process_faces(locs, preds, frame)
-            outputFrame = frame.copy()
+            outframe = frame.copy()
 
     def process_faces(self, face_locations, predictions, frame):
         for location, pred in zip(face_locations, predictions):
