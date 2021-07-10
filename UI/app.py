@@ -101,12 +101,12 @@ def get_duration():
     return "{} {}".format(duration, duration_uom)
 
 def detect_motion():
-    global livestream, outframe, lock
+    global livestream, linkedstream, outframe, lock
     while True:
         if active == "Live":
             frame = livestream.read()
         else:
-            frame = videostream.read()
+            frame = linkedstream.read()
 
         if frame is None:
             continue
