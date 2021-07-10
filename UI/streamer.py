@@ -115,6 +115,7 @@ class VideoStreamer:
        self.active = "Live"
 
     def detect_motion(self):
+        global outframe, lock
         while True:
             if self.active == "Live":
                 frame = self.livestream.read()
