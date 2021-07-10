@@ -13,6 +13,8 @@ from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 
 load_dotenv()
+outframe = None
+lock = threading.Lock()
 prototxtPath = os.path.sep.join(["./model/face_detector", "deploy.prototxt"])
 weightsPath = os.path.sep.join(["./model/face_detector", "res10_300x300_ssd_iter_140000.caffemodel"])
 maskNet = load_model("./model/mask_detect.model")
@@ -113,8 +115,6 @@ class VideoStreamer:
        self.active = "Live"
 
     def detect_motion(self):
-        global outframe
-
         while True:
             if self.active == "Live":
                 frame = self.livestream.read()
@@ -127,7 +127,8 @@ class VideoStreamer:
               #    (locs, preds) = self.detect_and_predict_mask(frame, faceNet, maskNet)
               #    if len(locs) > 0:
               #        frame = self.process_faces(locs, preds, frame)
-            outframe = frame.copy()
+            with lock:
+                outframe = frame.copy()
 
     def process_faces(self, face_locations, predictions, frame):
         for location, pred in zip(face_locations, predictions):
@@ -171,17 +172,15 @@ class VideoStreamer:
 
     def generate(self):
         while True:
-           if not self.paused:
-               if outframe is None:
-                   continue
+           with lock:
+               if not self.paused:
+                   if outframe is None:
+                       continue
 
-               flag, self.encodedImage = cv2.imencode(".jpg", outframe)
+                   flag, self.encodedImage = cv2.imencode(".jpg", outframe)
 
-               if not flag:
-                   continue
+                   if not flag:
+                       continue
               
-               yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
-                 bytearray(self.encodedImage) + b'\r\n')
-           else:
-               yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
-                 bytearray(self.encodedImage) + b'\r\n')
+           yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
+             bytearray(self.encodedImage) + b'\r\n')
