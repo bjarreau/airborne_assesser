@@ -53,7 +53,7 @@ def index():
         linkedstream = LinkedStream(url).start()
     elif request.form.get("live_feed") != None:
         if linkedstream is not None:
-            linkedStream.stop()
+            linkedstream.stop()
         active = "Live"
     elif request.form.get("Reset") != None:
         reset()
@@ -61,10 +61,10 @@ def index():
         set_radius(request.form.get("radius"))
         set_duration(request.form.get("duration"))
     elif request.form.get("pause") != None:
-        linkedStream.pause()
+        linkedstream.pause()
     elif request.form.get("replay") != None:
-        linkedStream.stop()
-        linkedStream = LinkedStream(url).start()
+        linkedstream.stop()
+        linkedstream = LinkedStream(url).start()
     else:
         active = "Live"
     return render_template("index.html", 
