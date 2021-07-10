@@ -1,7 +1,13 @@
 from flask import Flask, Response, request, render_template
 from streamer import VideoStreamer
+from VideoStream import VideoStream
+import threading
+import time
 
 app = Flask(__name__)
+
+livestream = VideoStream().start()
+time.sleep(2.0)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -36,5 +42,10 @@ def get_source():
     return Response(stream_client.get_source(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 if __name__ == "__main__":
-    stream_client = VideoStreamer()
+    stream_client = VideoStreamer(livestream)
+    t = threading.Thread(target=stream_client.detect_motion)
+    t.daemon = True
+    t.start()
     app.run(debug=True, host="0.0.0.0", port=8080)
+
+livestream.stop()
