@@ -6,6 +6,8 @@ import time
 
 app = Flask(__name__)
 
+outframe = None
+lock = threading.Lock()
 livestream = VideoStream().start()
 active = "Live"
 time.sleep(2.0)
