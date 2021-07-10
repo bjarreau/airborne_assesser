@@ -85,9 +85,9 @@ def set_radius(radius):
 def get_radius():
     return "{} {}".format(radius_size, radius_uom)
 
-def set_duration(self, duration):
+def set_duration(self, new_duration):
     global duration, duration_uom, message
-    parts = duration.split()
+    parts = new_duration.split()
     duration = parts[0]
     duration_uom = parts[1]
     message = "User submitted radius of {} {} and duration of {} {}." \
