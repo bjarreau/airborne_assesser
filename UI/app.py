@@ -1,8 +1,18 @@
 from flask import Flask, Response, request, render_template
 from streamer import VideoStreamer
 from VideoStream import VideoStream
+import cv2
+import zmq
+import pafy
+import numpy as np
 import threading
 import time
+from os import getenv
+import os
+from dotenv import load_dotenv
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+from tensorflow.keras.preprocessing.image import img_to_array
+from tensorflow.keras.models import load_model
 
 app = Flask(__name__)
 
