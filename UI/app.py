@@ -14,8 +14,6 @@ from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 
-app = Flask(__name__)
-
 load_dotenv()
 outframe = None
 lock = threading.Lock()
@@ -44,8 +42,11 @@ weightsPath = os.path.sep.join(["./model/face_detector", "res10_300x300_ssd_iter
 maskNet = load_model("./model/mask_detect.model")
 faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
 
+app = Flask(__name__)
+
 @app.route("/", methods=["GET", "POST"])
 def index():
+    global active, url, paused
     if request.form.get("source_path") != None:
         active = "Link"
         url = request.form.get("source_path")
@@ -66,6 +67,7 @@ def index():
       active=active, message=message, url=url, radius=get_radius(), duration=getDuration())
 
 def reset():
+    global radius_size, radius_uom, duration, duration_uom, message
     radius_size = default_radius_size
     radius_uom  = default_radius_uom
     duration = default_duration
@@ -73,6 +75,7 @@ def reset():
     message = None
 
 def set_radius(radius):
+    global radius_size, radius_uom, message
     parts = radius.split()
     radius_size = parts[0]
     radius_uom = parts[1]
@@ -83,6 +86,7 @@ def get_radius():
     return "{} {}".format(radius_size, radius_uom)
 
 def set_duration(self, duration):
+    global duration, duration_uom, message
     parts = duration.split()
     duration = parts[0]
     duration_uom = parts[1]
