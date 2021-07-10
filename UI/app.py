@@ -16,35 +16,81 @@ from tensorflow.keras.models import load_model
 
 app = Flask(__name__)
 
+load_dotenv()
 outframe = None
 lock = threading.Lock()
 livestream = VideoStream().start()
-active = "Live"
 time.sleep(2.0)
+
+#defaults
+active = "Live"
+default_radius_size = getenv('DEFAULT_RADIUS')
+default_radius_uom = getenv('DEFAULT_RADIUS_UOM')
+default_duration = getenv('DEFAULT_DURATION')
+default_duration_uom = getenv('DEFAULT_DURATION_UOM')
+url = "https://www.youtube.com/watch?v=CmomQkOau7c"
+paused = False
+message = None
+
+#working values
+radius_size = getenv('DEFAULT_RADIUS')
+radius_uom = getenv('DEFAULT_RADIUS_UOM')
+duration = getenv('DEFAULT_DURATION')
+duration_uom = getenv('DEFAULT_DURATION_UOM')
+
+#models
+prototxtPath = os.path.sep.join(["./model/face_detector", "deploy.prototxt"])
+weightsPath = os.path.sep.join(["./model/face_detector", "res10_300x300_ssd_iter_140000.caffemodel"])
+maskNet = load_model("./model/mask_detect.model")
+faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    #if request.form.get("source_path") != None:
-    #    stream_client.set_source(request.form.get("source_path"))
-    #elif request.form.get("live_feed") != None:
-    #    stream_client.goLive()
-    #elif request.form.get("Reset") != None:
-    #    stream_client.reset()
-    #elif request.form.get("radius") != None:
-    #    stream_client.set_radius(request.form.get("radius"))
-    #    stream_client.set_duration(request.form.get("duration"))
-    #elif request.form.get("pause") != None:
-    #    stream_client.pause()
+    if request.form.get("source_path") != None:
+        active = "Link"
+        url = request.form.get("source_path")
+    elif request.form.get("live_feed") != None:
+        active = "Live"
+    elif request.form.get("Reset") != None:
+        reset()
+    elif request.form.get("radius") != None:
+        set_radius(request.form.get("radius"))
+        set_duration(request.form.get("duration"))
+    elif request.form.get("pause") != None:
+        paused = True
     #elif request.form.get("replay") != None:
-    #    stream_client.playReverse()
-    #else:
-    #    stream_client.goLive()
+    #    playReverse()
+    else:
+        active = "Live"
     return render_template("index.html", 
-      active=active)
-      #message=stream_client.get_message(), 
-      #url=stream_client.get_url(),
-      #radius=,
-      #duration=stream_client.get_duration())
+      active=active, message=message, url=url, radius=get_radius(), duration=getDuration())
+
+def reset():
+    radius_size = default_radius_size
+    radius_uom  = default_radius_uom
+    duration = default_duration
+    duration_uom  = default_duration_uom
+    message = None
+
+def set_radius(radius):
+    parts = radius.split()
+    radius_size = parts[0]
+    radius_uom = parts[1]
+    message = "User submitted radius of {} {} and duration of {} {}." \
+    .format(radius_size, radius_uom, duration, duration_uom)
+
+def get_radius():
+    return "{} {}".format(radius_size, radius_uom)
+
+def set_duration(self, duration):
+    parts = duration.split()
+    duration = parts[0]
+    duration_uom = parts[1]
+    message = "User submitted radius of {} {} and duration of {} {}." \
+    .format(radius_size, radius_uom, duration, duration_uom)
+
+def get_duration(self):
+    return "{} {}".format(duration, duration_uom)
 
 def detect_motion():
     global livestream, outframe, lock
