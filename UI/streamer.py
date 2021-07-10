@@ -13,8 +13,6 @@ from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 
 load_dotenv()
-outframe = None
-lock = threading.Lock()
 prototxtPath = os.path.sep.join(["./model/face_detector", "deploy.prototxt"])
 weightsPath = os.path.sep.join(["./model/face_detector", "res10_300x300_ssd_iter_140000.caffemodel"])
 maskNet = load_model("./model/mask_detect.model")
@@ -60,49 +58,6 @@ class VideoStreamer:
        #self.video.open(video.url)
        #return self.video
 
-    def reset(self):
-       self.radius_size = self.default_radius_size
-       self.radius_uom  = self.default_radius_uom
-       self.duration = self.default_duration
-       self.duration_uom  = self.default_duration_uom
-       self.message = "User submitted radius of {} {} and duration of {} {}." \
-       .format(self.radius_size, self.radius_uom, self.duration, self.duration_uom)
-       return "{} {}".format(self.radius_size, self.radius_uom, self.duration, self.duration_uom)
-
-    def get_source(self):
-       return self.video
-
-    def get_url(self):
-       return self.url
-
-    def get_active(self):
-       return self.active
-
-    def get_message(self):
-       return self.message
-
-    def set_radius(self, radius):
-       parts = radius.split()
-       self.radius_size = parts[0]
-       self.radius_uom = parts[1]
-       self.message = "User submitted radius of {} {} and duration of {} {}." \
-       .format(self.radius_size, self.radius_uom, self.duration, self.duration_uom)
-       return
-
-    def get_radius(self):
-       return "{} {}".format(self.radius_size, self.radius_uom)
-
-    def set_duration(self, duration):
-       parts = duration.split()
-       self.duration = parts[0]
-       self.duration_uom = parts[1]
-       self.message = "User submitted radius of {} {} and duration of {} {}." \
-       .format(self.radius_size, self.radius_uom, self.duration, self.duration_uom)
-       return
-
-    def get_duration(self):
-       return "{} {}".format(self.duration, self.duration_uom)
-
     def pause(self):
        self.paused = not self.paused
 
@@ -110,9 +65,6 @@ class VideoStreamer:
        #self.RebuildPlayer()
        self.set_source(self.url)
 
-    def goLive(self):
-       print("Called goLive")
-       self.active = "Live"
 
     def detect_motion(self):
         global outframe, lock

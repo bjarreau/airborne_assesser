@@ -1,6 +1,7 @@
 from flask import Flask, Response, request, render_template
 from streamer import VideoStreamer
 from VideoStream import VideoStream
+from LinkedStream import LinkedStream
 import cv2
 import zmq
 import pafy
@@ -27,7 +28,6 @@ default_radius_uom = getenv('DEFAULT_RADIUS_UOM')
 default_duration = getenv('DEFAULT_DURATION')
 default_duration_uom = getenv('DEFAULT_DURATION_UOM')
 url = "https://www.youtube.com/watch?v=CmomQkOau7c"
-paused = False
 message = None
 
 #working values
@@ -46,11 +46,14 @@ app = Flask(__name__)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    global active, url, paused
+    global active, url, paused, linkedstream
     if request.form.get("source_path") != None:
         active = "Link"
         url = request.form.get("source_path")
+        linkedstream = LinkedStream(url).start()
     elif request.form.get("live_feed") != None:
+        if linkedstream is not None:
+            linkedStream.stop()
         active = "Live"
     elif request.form.get("Reset") != None:
         reset()
@@ -58,9 +61,10 @@ def index():
         set_radius(request.form.get("radius"))
         set_duration(request.form.get("duration"))
     elif request.form.get("pause") != None:
-        paused = True
-    #elif request.form.get("replay") != None:
-    #    playReverse()
+        linkedStream.pause()
+    elif request.form.get("replay") != None:
+        linkedStream.stop()
+        linkedStream = LinkedStream(url).start()
     else:
         active = "Live"
     return render_template("index.html", 
@@ -99,11 +103,60 @@ def get_duration():
 def detect_motion():
     global livestream, outframe, lock
     while True:
-        frame = livestream.read()
+        if active == "Live":
+            frame = livestream.read()
+        else:
+            frame = videostream.read()
+
         if frame is None:
-                continue
+            continue
+
+        (h, w) = frame.shape[:2]
+        scale = 400/float(w)
+        frame = cv2.resize(frame, (400, int(h*scale)), interpolation=cv2.INTER_AREA)
+
         with lock:
             outframe = frame.copy()
+
+def process_faces(face_locations, predictions, frame):
+    for location, pred in zip(face_locations, predictions):
+        top, right, bottom, left = location
+        (mask, naked) = pred
+
+        label = "Mask" if mask > withoutMask else "No Mask"
+        color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
+
+        # include the probability in the label
+        label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
+
+        cv2.putText(frame, label, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
+        cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
+    return frame
+
+def detect_and_predict_mask(frame, faceNet, maskNet):
+    (h, w) = frame.shape[:2]
+    blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), (104.0, 177.0, 123.0))
+    faceNet.setInput(blob)
+    detections = faceNet.forward()
+    faces = []
+    locs = []
+    preds = []
+    for i in range(0, detections.shape[2]):
+        confidence = detections[0, 0, i, 2]
+        (startX, startY, endX, endY) = (detections[0, 0, i, 3:7] * np.array([w, h, w, h])).astype("int")
+        (startX, startY) = (max(0, startX), max(0, startY))
+        (endX, endY) = (min(w - 1, endX), min(h - 1, endY))
+        face = frame[startY:endY, startX:endX]
+        face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
+        face = cv2.resize(face, (224, 224))
+        face = img_to_array(face)
+        face = preprocess_input(face)
+        faces.append(face)
+        locs.append((startX, startY, endX, endY))
+    if len(faces) > 0:
+        faces = np.array(faces, dtype="float32")
+        preds = maskNet.predict(faces, batch_size=32)
+    return (locs, preds)
 
 def generate():
     global outframe, lock
@@ -121,7 +174,6 @@ def video_feed():
     return Response(generate(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 if __name__ == "__main__":
-    #stream_client = VideoStreamer(livestream)
     t = threading.Thread(target=detect_motion)
     t.daemon = True
     t.start()

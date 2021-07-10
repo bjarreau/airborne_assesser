@@ -6,7 +6,7 @@ class VideoStream:
         self.stream = cv2.VideoCapture(-1)
         self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-        (self.grabbed, self.frame) = self.stream.read()
+        (grabbed, self.frame) = self.stream.read()
         self.stopped =False
 
     def start(self):
@@ -19,7 +19,7 @@ class VideoStream:
         while True:
             if self.stopped:
                 return
-            (self.grabbed, self.frame) = self.stream.read()
+            (grabbed, self.frame) = self.stream.read()
 
     def read(self):
          return self.frame
