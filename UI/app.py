@@ -19,6 +19,7 @@ load_dotenv()
 outframe = None
 lock = threading.Lock()
 livestream = VideoStream().start()
+linkedstream = None
 time.sleep(2.0)
 
 #defaults
