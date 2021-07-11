@@ -66,7 +66,7 @@ def index():
         linkedstream.pause()
     elif request.form.get("replay") != None:
         linkedstream.stop()
-        linkedstream.changeUrl()
+        linkedstream.changeUrl(url)
         linkedstream.start()
     else:
         active = "Live"
