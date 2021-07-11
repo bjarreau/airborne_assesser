@@ -22,6 +22,8 @@ class LinkedStream:
         self.paused = not self.paused
 
     def start(self):
+        self.stopped = False
+        self.paused = False
         t = Thread(target=self.update, name="Live Stream", args=())
         t.daemon = True
         t.start()

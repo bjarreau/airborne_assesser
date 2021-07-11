@@ -7,9 +7,10 @@ class VideoStream:
         self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
         (grabbed, self.frame) = self.stream.read()
-        self.stopped =False
+        self.stopped = False
 
     def start(self):
+        self.stopped = False
         t = Thread(target=self.update, name="Live Stream", args=())
         t.daemon = True
         t.start()
