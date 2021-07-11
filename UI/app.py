@@ -52,7 +52,7 @@ def index():
         active = "Link"
         url = request.form.get("source_path")
         linkedstream.changeUrl(url)
-	linkedstream.start()
+        linkedstream.start()
     elif request.form.get("live_feed") != None:
         if linkedstream is not None:
             linkedstream.stop()
@@ -67,7 +67,7 @@ def index():
     elif request.form.get("replay") != None:
         linkedstream.stop()
         linkedstream.changeUrl()
-	linkedstream.start()
+        linkedstream.start()
     else:
         active = "Live"
     return render_template("index.html", 
