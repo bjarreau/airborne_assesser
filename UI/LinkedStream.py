@@ -7,7 +7,6 @@ class LinkedStream:
     def __init__(self, path):
         urlPafy = pafy.new(path)
         video = urlPafy.getbest(preftype="mp4")
-        #self.video.open(video.url)
         self.stream = cv2.VideoCapture(video.url)
         (grabbed, self.frame) = self.stream.read()
         self.stopped = False
