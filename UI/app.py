@@ -18,6 +18,7 @@ from tensorflow.keras.models import load_model
 load_dotenv()
 outframe = None
 lock = threading.Lock()
+url = "https://www.youtube.com/watch?v=CmomQkOau7c"
 livestream = VideoStream().start()
 linkedstream = LinkedStream(url)
 time.sleep(2.0)
@@ -28,7 +29,6 @@ default_radius_size = getenv('DEFAULT_RADIUS')
 default_radius_uom = getenv('DEFAULT_RADIUS_UOM')
 default_duration = getenv('DEFAULT_DURATION')
 default_duration_uom = getenv('DEFAULT_DURATION_UOM')
-url = "https://www.youtube.com/watch?v=CmomQkOau7c"
 message = None
 
 #working values
