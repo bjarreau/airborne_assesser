@@ -1,5 +1,4 @@
 from flask import Flask, Response, request, render_template
-from streamer import VideoStreamer
 from VideoStream import VideoStream
 from LinkedStream import LinkedStream
 import cv2
