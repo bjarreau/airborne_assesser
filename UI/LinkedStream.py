@@ -11,7 +11,7 @@ class LinkedStream:
         self.stream = cv2.VideoCapture(video.url)
         (grabbed, self.frame) = self.stream.read()
         self.stopped = False
-        self.paused = True
+        self.paused = False
 
     def changeUrl(self, url):
         urlPafy = pafy.new(url)
