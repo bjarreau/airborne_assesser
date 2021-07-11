@@ -19,7 +19,7 @@ load_dotenv()
 outframe = None
 lock = threading.Lock()
 livestream = VideoStream().start()
-linkedstream = None
+linkedstream = LinkedStream(url)
 time.sleep(2.0)
 
 #defaults
@@ -51,7 +51,8 @@ def index():
     if request.form.get("source_path") != None:
         active = "Link"
         url = request.form.get("source_path")
-        linkedstream = LinkedStream(url).start()
+        linkedstream.changeUrl(url)
+	linkedstream.start()
     elif request.form.get("live_feed") != None:
         if linkedstream is not None:
             linkedstream.stop()
@@ -65,7 +66,8 @@ def index():
         linkedstream.pause()
     elif request.form.get("replay") != None:
         linkedstream.stop()
-        linkedstream = LinkedStream(url).start()
+        linkedstream.changeUrl()
+	linkedstream.start()
     else:
         active = "Live"
     return render_template("index.html", 
