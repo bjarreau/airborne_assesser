@@ -116,7 +116,7 @@ def detect_and_predict():
         (h, w) = frame.shape[:2]
         scale = 400/float(w)
         frame = cv2.resize(frame, (400, int(h*scale)), interpolation=cv2.INTER_AREA)
-	frame = find_masks(frame)
+        frame = find_masks(frame)
 
         with lock:
             outframe = frame.copy()
