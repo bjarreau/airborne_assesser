@@ -102,7 +102,7 @@ def set_duration(new_duration):
 def get_duration():
     return "{} {}".format(duration, duration_uom)
 
-def detect_motion():
+def detect_and_predict():
     global livestream, linkedstream, outframe, lock
     while True:
         if active == "Live":
@@ -116,6 +116,7 @@ def detect_motion():
         (h, w) = frame.shape[:2]
         scale = 400/float(w)
         frame = cv2.resize(frame, (400, int(h*scale)), interpolation=cv2.INTER_AREA)
+	frame = find_masks(frame)
 
         with lock:
             outframe = frame.copy()
@@ -135,7 +136,7 @@ def process_faces(face_locations, predictions, frame):
         cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
     return frame
 
-def detect_and_predict_mask(frame, faceNet, maskNet):
+def find_masks(frame):
     (h, w) = frame.shape[:2]
     blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), (104.0, 177.0, 123.0))
     faceNet.setInput(blob)
@@ -155,10 +156,12 @@ def detect_and_predict_mask(frame, faceNet, maskNet):
         face = preprocess_input(face)
         faces.append(face)
         locs.append((startX, startY, endX, endY))
+
     if len(faces) > 0:
         faces = np.array(faces, dtype="float32")
         preds = maskNet.predict(faces, batch_size=32)
-    return (locs, preds)
+
+    return process_faces(locs, preds, frame)
 
 def generate():
     global outframe, lock
@@ -176,7 +179,7 @@ def video_feed():
     return Response(generate(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 if __name__ == "__main__":
-    t = threading.Thread(target=detect_motion)
+    t = threading.Thread(target=detect_and_predict)
     t.daemon = True
     t.start()
     app.run(debug=True, host="0.0.0.0", port=8080, threaded=True, use_reloader=False)
