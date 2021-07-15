@@ -10,7 +10,6 @@ from os import getenv
 import os
 from dotenv import load_dotenv
 import tensorflow as tf
-import face_recognition
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
@@ -37,10 +36,10 @@ duration = getenv('DEFAULT_DURATION')
 duration_uom = getenv('DEFAULT_DURATION_UOM')
 
 #models
-#prototxtPath = os.path.sep.join(["./model/face_detector", "deploy.prototxt"])
-#weightsPath = os.path.sep.join(["./model/face_detector", "res10_300x300_ssd_iter_140000.caffemodel"])
+prototxtPath = os.path.sep.join(["./model/face_detector", "deploy.prototxt"])
+weightsPath = os.path.sep.join(["./model/face_detector", "res10_300x300_ssd_iter_140000.caffemodel"])
 maskNet = load_model("./model/mask_detect")
-#faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
+faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
 
 app = Flask(__name__)
 
@@ -106,17 +105,12 @@ def get_duration():
 
 def find_masks(frame):
     (h, w) = frame.shape[:2]
-    #blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), (104.0, 177.0, 123.0))
-    #faceNet.setInput(blob)
-    #detections = faceNet.forward()
-    #for i in range(0, detections.shape[2]):
-    # Convert the image from BGR color
-    small_frame = frame[:, :, ::-1]
-    face_locations = face_recognition.face_locations(small_frame)
-    if len(face_locations) > 0:
-        for location in face_locations:
-            #confidence = detections[0, 0, i, 2]
-            #if confidence > 0.5:
+    blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), (104.0, 177.0, 123.0))
+    faceNet.setInput(blob)
+    detections = faceNet.forward()
+    for i in range(0, detections.shape[2]):
+        confidence = detections[0, 0, i, 2]
+        if confidence > 0.5:
             (startX, startY, endX, endY) = location
             (startX, startY) = (max(0, startX), max(0, startY))
             (endX, endY) = (min(w - 1, endX), min(h - 1, endY))
