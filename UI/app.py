@@ -111,9 +111,7 @@ def detect_and_predict():
             scale = 400/float(w)
             frame = cv2.resize(frame, (400, int(h*scale)), interpolation=cv2.INTER_AREA)
             frame = find_masks(frame)
-
-            with lock:
-                outframe = frame.copy()
+            outframe = frame.copy()
 
 def find_masks(frame):
     (h, w) = frame.shape[:2]
@@ -142,12 +140,11 @@ def find_masks(frame):
     return frame
 
 def generate():
-    global outframe, lock
+    global outframe
     while True:
-        with lock:
-            if outframe is not None:
-               (flag, outframe) = cv2.imencode(".jpg", outframe)
-        yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(outframe) + b'\r\n')
+        if outframe is not None:
+            (flag, encoded) = cv2.imencode(".jpg", outframe)
+        yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encoded) + b'\r\n')
 
 @app.route("/video_feed")
 def video_feed():
