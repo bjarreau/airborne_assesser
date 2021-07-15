@@ -140,9 +140,14 @@ def find_masks(frame):
     return frame
 
 def generate():
-    global outframe
+    encoded = None
     while True:
-        if outframe is not None:
+        frame = livestream.read() if active == "Live" else linkedstream.read()
+        if frame is not None:
+            (h, w) = frame.shape[:2]
+            scale = 400/float(w)
+            frame = cv2.resize(frame, (400, int(h*scale)), interpolation=cv2.INTER_AREA)
+            frame = find_masks(frame)
             (flag, encoded) = cv2.imencode(".jpg", outframe)
         yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encoded) + b'\r\n')
 
@@ -151,9 +156,9 @@ def video_feed():
     return Response(generate(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 if __name__ == "__main__":
-    t = threading.Thread(target=detect_and_predict)
-    t.daemon = True
-    t.start()
+    #t = threading.Thread(target=detect_and_predict)
+    #t.daemon = True
+    #t.start()
     app.run(debug=True, host="0.0.0.0", port=8080, threaded=True, use_reloader=False)
 
 livestream.stop()
