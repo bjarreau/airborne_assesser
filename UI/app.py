@@ -19,7 +19,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 load_dotenv()
 outframe = None
 lock = threading.Lock()
-url = "https://youtu.be/6_8d-W_lorY"
+url = "https://youtu.be/dSvff0QljHQ"
 livestream = VideoStream().start()
 linkedstream = LinkedStream(url)
 
@@ -149,7 +149,7 @@ def generate():
             scale = 400/float(w)
             frame = cv2.resize(frame, (400, int(h*scale)), interpolation=cv2.INTER_AREA)
             frame = find_masks(frame)
-            (flag, encoded) = cv2.imencode(".jpg", outframe)
+            (flag, encoded) = cv2.imencode(".jpg", frame)
         yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encoded) + b'\r\n')
 
 @app.route("/video_feed")
