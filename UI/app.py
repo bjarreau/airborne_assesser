@@ -18,10 +18,9 @@ from tensorflow.keras.models import load_model
 load_dotenv()
 outframe = None
 lock = threading.Lock()
-url = "https://www.youtube.com/watch?v=CmomQkOau7c"
+url = "https://youtu.be/6_8d-W_lorY"
 livestream = VideoStream().start()
 linkedstream = LinkedStream(url)
-time.sleep(2.0)
 
 #defaults
 active = "Live"
@@ -121,9 +120,6 @@ def find_masks(frame):
     blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), (104.0, 177.0, 123.0))
     faceNet.setInput(blob)
     detections = faceNet.forward()
-    faces = []
-    locs = []
-    preds = []
     for i in range(0, detections.shape[2]):
         confidence = detections[0, 0, i, 2]
         if confidence > 0.5:
@@ -134,8 +130,6 @@ def find_masks(frame):
             face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
             face = cv2.resize(face, (224, 224))
             face = face.reshape(1, 224, 224, 3)
-            #face = img_to_array(face)
-            #face = preprocess_input(face)
             prediction = maskNet.predict(face)
             for pred in prediction:
                 (mask, naked) = prediction
@@ -152,8 +146,8 @@ def generate():
     while True:
         with lock:
             if outframe is not None:
-               (flag, encodedImage) = cv2.imencode(".jpg", outframe)
-        yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
+               (flag, outframe) = cv2.imencode(".jpg", outframe)
+        yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(outframe) + b'\r\n')
 
 @app.route("/video_feed")
 def video_feed():
