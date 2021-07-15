@@ -106,36 +106,15 @@ def get_duration():
 def detect_and_predict():
     global livestream, linkedstream, outframe, lock
     while True:
-        if active == "Live":
-            frame = livestream.read()
-        else:
-            frame = linkedstream.read()
+        frame = livestream.read() if active == "Live" else linkedstream.read()
+        if frame is not None:
+            (h, w) = frame.shape[:2]
+            scale = 400/float(w)
+            frame = cv2.resize(frame, (400, int(h*scale)), interpolation=cv2.INTER_AREA)
+            frame = find_masks(frame)
 
-        if frame is None:
-            continue
-
-        (h, w) = frame.shape[:2]
-        scale = 400/float(w)
-        frame = cv2.resize(frame, (400, int(h*scale)), interpolation=cv2.INTER_AREA)
-        frame = find_masks(frame)
-
-        with lock:
-            outframe = frame.copy()
-
-def process_faces(face_locations, predictions, frame):
-    for location, pred in zip(face_locations, predictions):
-        top, right, bottom, left = location
-        (mask, naked) = pred
-
-        label = "Mask" if mask > withoutMask else "No Mask"
-        color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
-
-        # include the probability in the label
-        label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
-
-        cv2.putText(frame, label, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
-        cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
-    return frame
+            with lock:
+                outframe = frame.copy()
 
 def find_masks(frame):
     (h, w) = frame.shape[:2]
@@ -163,17 +142,26 @@ def find_masks(frame):
         faces = np.array(faces, dtype="float32")
         preds = maskNet.predict(faces, batch_size=32)
 
-    return process_faces(locs, preds, frame)
+    for (location, pred) in zip(face_locations, predictions):
+        top, right, bottom, left = location
+        (mask, naked) = pred
+
+        label = "Mask" if mask > withoutMask else "No Mask"
+        color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
+
+        # include the probability in the label
+        label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
+        cv2.putText(frame, label, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
+        cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
+
+    return frame
 
 def generate():
     global outframe, lock
     while True:
         with lock:
-            if outframe is None:
-                continue
-            (flag, encodedImage) = cv2.imencode(".jpg", outframe)
-            if not flag:
-                continue
+            if outframe is not None:
+               (flag, encodedImage) = cv2.imencode(".jpg", outframe)
         yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
 
 @app.route("/video_feed")
