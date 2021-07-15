@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 import tensorflow as tf
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.preprocessing.image import img_to_array
+from tensorflow.keras.models import load_model
 
 load_dotenv()
 outframe = None
@@ -39,7 +40,7 @@ duration_uom = getenv('DEFAULT_DURATION_UOM')
 #models
 prototxtPath = os.path.sep.join(["./model/face_detector", "deploy.prototxt"])
 weightsPath = os.path.sep.join(["./model/face_detector", "res10_300x300_ssd_iter_140000.caffemodel"])
-maskNet = tf.saved_model.load("./model/mask_detect")
+maskNet = load_model("./model/mask_detect")
 faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
 
 app = Flask(__name__)
