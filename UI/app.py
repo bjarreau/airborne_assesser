@@ -135,24 +135,12 @@ def find_masks(frame):
             face = cv2.resize(face, (224, 224))
             face = img_to_array(face)
             face = preprocess_input(face)
-            faces.append(face)
-            locs.append((startX, startY, endX, endY))
-
-    if len(faces) > 0:
-        faces = np.array(faces, dtype="float32")
-        preds = maskNet.predict(faces, batch_size=32)
-
-    for (location, pred) in zip(face_locations, predictions):
-        top, right, bottom, left = location
-        (mask, naked) = pred
-
-        label = "Mask" if mask > withoutMask else "No Mask"
-        color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
-
-        # include the probability in the label
-        label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
-        cv2.putText(frame, label, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
-        cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
+            (mask, naked) = maskNet.predict(face)
+            label = "Mask" if mask > naked else "No Mask"
+            color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
+            label = "{}: {:.2f}%".format(label, max(mask, naked) * 100)
+            cv2.putText(frame, label, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
+            cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
     return frame
 
