@@ -21,13 +21,7 @@ class LinkedStream:
     def pause(self):
         self.paused = not self.paused
 
-    def start(self):
-        self.paused = False
-
     def read(self):
         if not self.paused:
             self.frame = self.stream.read()
-            if not grabbed:
-                self.stopped = True
-                self.stop()
         return self.frame
