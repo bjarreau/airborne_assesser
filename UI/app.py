@@ -133,8 +133,9 @@ def find_masks(frame):
             face = frame[startY:endY, startX:endX]
             face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
             face = cv2.resize(face, (224, 224))
-            face = img_to_array(face)
-            face = preprocess_input(face)
+            face = face.reshape(1, 224, 224, 3)
+            #face = img_to_array(face)
+            #face = preprocess_input(face)
             (mask, naked) = maskNet.predict(face)
             label = "Mask" if mask > naked else "No Mask"
             color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
