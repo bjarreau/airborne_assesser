@@ -5,7 +5,6 @@ import cv2
 import zmq
 import pafy
 import numpy as np
-import threading
 import time
 from os import getenv
 import os
@@ -56,6 +55,8 @@ def index():
     elif request.form.get("live_feed") != None:
         if linkedstream is not None:
             linkedstream.stop()
+            linkedstream.changeUrl(url)
+            linkedstream.start()
         active = "Live"
     elif request.form.get("Reset") != None:
         reset()
@@ -103,17 +104,6 @@ def set_duration(new_duration):
 def get_duration():
     return "{} {}".format(duration, duration_uom)
 
-def detect_and_predict():
-    global livestream, linkedstream, outframe, lock
-    while True:
-        frame = livestream.read() if active == "Live" else linkedstream.read()
-        if frame is not None:
-            (h, w) = frame.shape[:2]
-            scale = 400/float(w)
-            frame = cv2.resize(frame, (400, int(h*scale)), interpolation=cv2.INTER_AREA)
-            frame = find_masks(frame)
-            outframe = frame.copy()
-
 def find_masks(frame):
     (h, w) = frame.shape[:2]
     blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), (104.0, 177.0, 123.0))
@@ -157,9 +147,6 @@ def video_feed():
     return Response(generate(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 if __name__ == "__main__":
-    #t = threading.Thread(target=detect_and_predict)
-    #t.daemon = True
-    #t.start()
-    app.run(debug=True, host="0.0.0.0", port=8080, threaded=True, use_reloader=False)
+    app.run(debug=True, host="0.0.0.0", port=8080, use_reloader=False)
 
 livestream.stop()
