@@ -1,4 +1,3 @@
-from threading import Thread
 import sys
 import cv2
 import pafy
@@ -23,25 +22,15 @@ class LinkedStream:
     def start(self):
         self.stopped = False
         self.paused = False
-        t = Thread(target=self.update, name="Live Stream", args=())
-        t.daemon = True
-        t.start()
         return self
 
-    def update(self):
-        while True:
-            if self.stopped:
-                break
-
-            if not self.paused:
-                (grabbed, self.frame) = self.stream.read()
-                if not grabbed:
-                    self.stopped = True
-				
-        self.stream.release()
-
     def read(self):
+        if not self.paused:
+            (grabbed, self.frame) = self.stream.read()
+            if not grabbed:
+                self.stopped = True
         return self.frame
 
     def stop(self):
         self.stopped = True
+        self.stream.release()
