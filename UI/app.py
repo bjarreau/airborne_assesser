@@ -15,6 +15,7 @@ from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 load_dotenv()
 outframe = None
 lock = threading.Lock()
@@ -130,7 +131,7 @@ def find_masks(frame):
             face = face.reshape(1, 224, 224, 3)
             prediction = maskNet.predict(face)
             for pred in prediction:
-                (mask, naked) = prediction
+                (mask, naked) = pred
                 label = "Mask" if mask > naked else "No Mask"
                 color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
                 label = "{}: {:.2f}%".format(label, max(mask, naked) * 100)
