@@ -17,7 +17,7 @@ from tensorflow.keras.models import load_model
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 load_dotenv()
 outframe = None
-url = "https://youtu.be/dSvff0QljHQ"
+url = "https://youtu.be/06zflj3-m1Q"
 livestream = VideoStream()
 linkedstream = LinkedStream(url)
 
