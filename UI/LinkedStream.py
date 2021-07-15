@@ -26,7 +26,6 @@ class LinkedStream:
     def start(self):
         self.stopped = False
         self.paused = False
-        return self
 
     def read(self):
         if not self.paused:

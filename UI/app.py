@@ -18,7 +18,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 load_dotenv()
 outframe = None
 url = "https://youtu.be/dSvff0QljHQ"
-livestream = VideoStream().start()
+livestream = VideoStream()
 linkedstream = LinkedStream(url)
 
 #defaults
@@ -48,6 +48,7 @@ def index():
     global active, url, paused, linkedstream
     if request.form.get("source_path") != None:
         active = "Link"
+        livestream.stop()
         url = request.form.get("source_path")
         linkedstream.changeUrl(url)
         linkedstream.start()
@@ -57,6 +58,7 @@ def index():
             linkedstream.changeUrl(url)
             linkedstream.start()
         active = "Live"
+        livestream.start()
     elif request.form.get("Reset") != None:
         reset()
     elif request.form.get("radius") != None:
@@ -70,6 +72,7 @@ def index():
         linkedstream.start()
     else:
         active = "Live"
+        livestream.start()
     return render_template("index.html", 
       active=active, message=message, url=url, radius=get_radius(), duration=get_duration())
 
