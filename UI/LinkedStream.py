@@ -12,7 +12,7 @@ class LinkedStream:
         self.paused = False
 
     def changeUrl(self, url):
-        self.stream.release()
+        self.paused = True
         urlPafy = pafy.new(url)
         video = urlPafy.getbest(preftype="mp4")
         self.stream = cv2.VideoCapture(video.url)
@@ -30,7 +30,6 @@ class LinkedStream:
     def read(self):
         if not self.paused:
             self.frame = self.stream.read()
-            return self.frame
             if not grabbed:
                 self.stopped = True
                 self.stop()
@@ -38,4 +37,3 @@ class LinkedStream:
 
     def stop(self):
         self.stopped = True
-        self.stream.release()
