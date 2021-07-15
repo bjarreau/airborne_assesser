@@ -120,7 +120,7 @@ def find_masks(frame):
             (startX, startY, endX, endY) = location
             (startX, startY) = (max(0, startX), max(0, startY))
             (endX, endY) = (min(w - 1, endX), min(h - 1, endY))
-            face = small_frame[startY:endY, startX:endX]
+            face = frame[startY:endY, startX:endX]
             face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
             face = cv2.resize(face, (224, 224))
             face = face.reshape(1, 224, 224, 3)
