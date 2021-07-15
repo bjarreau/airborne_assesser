@@ -17,7 +17,6 @@ from tensorflow.keras.models import load_model
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 load_dotenv()
 outframe = None
-lock = threading.Lock()
 url = "https://youtu.be/dSvff0QljHQ"
 livestream = VideoStream().start()
 linkedstream = LinkedStream(url)
@@ -140,7 +139,7 @@ def generate():
             frame = cv2.resize(frame, (400, int(h*scale)), interpolation=cv2.INTER_AREA)
             frame = find_masks(frame)
             (flag, encoded) = cv2.imencode(".jpg", frame)
-        yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encoded) + b'\r\n')
+            yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encoded) + b'\r\n')
 
 @app.route("/video_feed")
 def video_feed():
