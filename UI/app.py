@@ -10,6 +10,7 @@ from os import getenv
 import os
 from dotenv import load_dotenv
 import tensorflow as tf
+import simplejpeg
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
@@ -101,6 +102,7 @@ def find_masks(frame):
     blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), (104.0, 177.0, 123.0))
     faceNet.setInput(blob)
     detections = faceNet.forward()
+    faces = []
     for i in range(0, detections.shape[2]):
         confidence = detections[0, 0, i, 2]
         if confidence > 0.5:
@@ -110,8 +112,9 @@ def find_masks(frame):
             face = frame[startY:endY, startX:endX]
             face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
             face = cv2.resize(face, (224, 224))
-            face = face.reshape(1, 224, 224, 3)
-            prediction = maskNet.predict(face)
+            face = preprocess_input(face)
+            faces.append(face)
+            prediction = maskNet.predict(faces)
             for pred in prediction:
                 (mask, naked) = pred
                 label = "Mask" if mask > naked else "No Mask"
@@ -131,7 +134,7 @@ def generate():
             scale = 400/float(w)
             frame = cv2.resize(frame, (400, int(h*scale)), interpolation=cv2.INTER_AREA)
             frame = find_masks(frame)
-            (flag, encoded) = cv2.imencode(".jpg", frame)
+            (flag, encoded) = simplejpeg.encode_jpeg(frame)
             yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encoded) + b'\r\n')
 
 @app.route("/video_feed")
