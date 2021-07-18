@@ -99,25 +99,17 @@ def get_duration():
     return "{} {}".format(duration, duration_uom)
 
 def find_masks(frame):
-    (h, w) = frame.shape[:2]
-    faces = face_cascade.detectMultiScale(frame)
-    for f in faces:
-        print("Face Found")
-    #blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), (104.0, 177.0, 123.0))
-    #faceNet.setInput(blob)
-    #detections = faceNet.forward()
-    #for i in range(0, detections.shape[2]):
-       # confidence = detections[0, 0, i, 2]
-       # if confidence > 0.5:
-       #     (startX, startY, endX, endY) = (detections[0, 0, i, 3:7] * np.array([w, h, w, h])).astype("int")
-       #     (startX, startY) = (max(0, startX), max(0, startY))
-       #     (endX, endY) = (min(w - 1, endX), min(h - 1, endY))
-       #     face = frame[startY:endY, startX:endX]
-       #     if face is not None and frame is not None:
-       #         face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
-       #         face = cv2.resize(face, (224, 224))
-               # prediction = maskNet.predict(face.reshape(1, 224, 224, 3), batch_size=32)
-               # for pred in prediction:
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    gray = cv2.equalizeHist(gray)
+    faces = face_cascade.detectMultiScale(gray)
+    for (x,y,w,h) in faces:
+        face = frame[y:y+h, x:x+w]
+        if face is not None:
+            cv2.rectangle(frame, (x, y), (x+w, y+h), color, 2)
+            #face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
+            #face = cv2.resize(face, (224, 224))
+            # prediction = maskNet.predict(face.reshape(1, 224, 224, 3), batch_size=32)
+            # for pred in prediction:
                #     (mask, naked) = pred
                #     label = "Mask" if mask > naked else "No Mask"
                #     color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
