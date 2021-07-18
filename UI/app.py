@@ -18,7 +18,7 @@ from tensorflow.keras.models import load_model
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 load_dotenv()
 outframe = None
-url = "https://youtu.be/06zflj3-m1Q"
+url = "https://youtu.be/7PYzSXHd6U4"
 livestream = VideoStream()
 linkedstream = LinkedStream(url)
 
@@ -37,10 +37,7 @@ duration = getenv('DEFAULT_DURATION')
 duration_uom = getenv('DEFAULT_DURATION_UOM')
 
 #models
-#prototxtPath = os.path.sep.join(["./model/face_detector", "deploy.prototxt"])
-#weightsPath = os.path.sep.join(["./model/face_detector", "res10_300x300_ssd_iter_140000.caffemodel"])
 maskNet = load_model("./model/mask_detect")
-#faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
 face_cascade = cv2.CascadeClassifier("./model/haarcascades_frontalface_default.xml")
 
 app = Flask(__name__)
