@@ -38,7 +38,7 @@ duration_uom = getenv('DEFAULT_DURATION_UOM')
 
 #models
 maskNet = load_model("./model/mask_detect")
-face_cascade = cv2.CascadeClassifier("./model/haarcascades_frontalface_default.xml")
+face_cascade = cv2.CascadeClassifier("./model/haarcascades_frontalface_alt2.xml")
 
 app = Flask(__name__)
 
@@ -97,7 +97,7 @@ def get_duration():
 
 def find_masks(frame):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(60,60))
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(60,60), flags=cv2.CASCADE_SCALE_IMAGE)
     for (x,y,w,h) in faces:
         face = frame[y:y+h, x:x+w]
         if face is not None:
@@ -123,9 +123,6 @@ def generate():
     while True:
         (conf, frame) = livestream.read() if active == "Live" else linkedstream.read()
         if frame is not None:
-            #(h, w) = frame.shape[:2]
-            #scale = 400/float(w)
-            #frame = cv2.resize(frame, (400, int(h*scale)), interpolation=cv2.INTER_AREA)
             frame = find_masks(frame)
             (f, encoded) = cv2.imencode(".jpg", frame)
             yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encoded) + b'\r\n')
