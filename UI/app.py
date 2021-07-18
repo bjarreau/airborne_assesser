@@ -105,17 +105,16 @@ def find_masks(frame):
     for (x,y,w,h) in faces:
         face = frame[y:y+h, x:x+w]
         if face is not None:
-            cv2.rectangle(frame, (x, y), (x+w, y+h), color, 2)
-            #face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
-            #face = cv2.resize(face, (224, 224))
-            # prediction = maskNet.predict(face.reshape(1, 224, 224, 3), batch_size=32)
-            # for pred in prediction:
-               #     (mask, naked) = pred
-               #     label = "Mask" if mask > naked else "No Mask"
-               #     color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
-               #     label = "{}: {:.2f}%".format(label, max(mask, naked) * 100)
-               #     cv2.putText(frame, label, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
-               #     cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
+            face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
+            face = cv2.resize(face, (224, 224))
+            prediction = maskNet.predict(face.reshape(1, 224, 224, 3), batch_size=32)
+            for pred in prediction:
+                (mask, naked) = pred
+                label = "Mask" if mask > naked else "No Mask"
+                color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
+                label = "{}: {:.2f}%".format(label, max(mask, naked) * 100) 
+                cv2.putText(frame, label, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
+                cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
     return frame
 
