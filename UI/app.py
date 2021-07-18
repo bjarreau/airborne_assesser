@@ -38,7 +38,7 @@ duration_uom = getenv('DEFAULT_DURATION_UOM')
 
 #models
 maskNet = load_model("./model/mask_detect")
-face_cascade = cv2.CascadeClassifier("./model/haarcascades_frontalface_alt2.xml")
+face_cascade = cv2.CascadeClassifier("./model/haarcascade_frontalface_alt2.xml")
 
 app = Flask(__name__)
 
