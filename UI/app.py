@@ -96,15 +96,17 @@ def get_duration():
     return "{} {}".format(duration, duration_uom)
 
 def find_masks(frame):
-    im=cv2.flip(im,1,1)
-    mini = cv2.resize(im, (im.shape[1]//4, im.shape[0]//4))
-    faces = face_cascade.detectMultiScale(mini)
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(60,60))
     for (x,y,w,h) in faces:
         face = frame[y:y+h, x:x+w]
         if face is not None:
             face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
-            face = cv2.resize(face, (224, 224))/255
-            prediction = maskNet.predict(face.reshape(1, 224, 224, 3), batch_size=32)
+            face = cv2.resize(face, (224, 224))
+            face = img_to_array(face)
+            face = np.expand_dims(face, axis=0)
+            face = preprocess_input(face)
+            prediction = maskNet.predict(face.reshape(1, 224, 224, 3))
             for pred in prediction:
                 (mask, naked) = pred
                 if mask > .5 or naked > .5:
@@ -121,9 +123,9 @@ def generate():
     while True:
         (conf, frame) = livestream.read() if active == "Live" else linkedstream.read()
         if frame is not None:
-            (h, w) = frame.shape[:2]
-            scale = 400/float(w)
-            frame = cv2.resize(frame, (400, int(h*scale)), interpolation=cv2.INTER_AREA)
+            #(h, w) = frame.shape[:2]
+            #scale = 400/float(w)
+            #frame = cv2.resize(frame, (400, int(h*scale)), interpolation=cv2.INTER_AREA)
             frame = find_masks(frame)
             (f, encoded) = cv2.imencode(".jpg", frame)
             yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encoded) + b'\r\n')
