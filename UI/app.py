@@ -141,6 +141,6 @@ def video_feed():
     return Response(generate(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 if __name__ == "__main__":
-    if not face_cascade.load(cv2.samples.findFile("haarcascade_frontalface_alt.xml")):
+    if not face_cascade.load("./model/haarcascade_frontalface_alt.xml"):
         print("CANT FIND HAAR CLASSIFIER!")
     app.run(debug=True, host="0.0.0.0", port=8080, threaded=True, use_reloader=False)
