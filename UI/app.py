@@ -97,7 +97,7 @@ def get_duration():
 
 def find_masks(frame):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(60,60), flags=cv2.CASCADE_SCALE_IMAGE)
+    faces = face_cascade.detectMultiScale(gray)
     for (x,y,w,h) in faces:
         face = frame[y:y+h, x:x+w]
         if face is not None:
