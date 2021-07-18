@@ -41,7 +41,7 @@ duration_uom = getenv('DEFAULT_DURATION_UOM')
 #weightsPath = os.path.sep.join(["./model/face_detector", "res10_300x300_ssd_iter_140000.caffemodel"])
 maskNet = load_model("./model/mask_detect")
 #faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
-face_cascade = cv2.CascadeClassifier()
+face_cascade = cv2.CascadeClassifier("./model/haarcascades_frontalface_default.xml")
 
 app = Flask(__name__)
 
@@ -99,7 +99,10 @@ def get_duration():
     return "{} {}".format(duration, duration_uom)
 
 def find_masks(frame):
-    #(h, w) = frame.shape[:2]
+    (h, w) = frame.shape[:2]
+    faces = face_cascade.detectMultiScale(frame)
+    for f in faces:
+        print("Face Found")
     #blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), (104.0, 177.0, 123.0))
     #faceNet.setInput(blob)
     #detections = faceNet.forward()
@@ -141,6 +144,4 @@ def video_feed():
     return Response(generate(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 if __name__ == "__main__":
-    if not face_cascade.load("./model/haarcascade_frontalface_alt.xml"):
-        print("CANT FIND HAAR CLASSIFIER!")
     app.run(debug=True, host="0.0.0.0", port=8080, threaded=True, use_reloader=False)
