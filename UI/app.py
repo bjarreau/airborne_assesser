@@ -96,22 +96,23 @@ def get_duration():
     return "{} {}".format(duration, duration_uom)
 
 def find_masks(frame):
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    gray = cv2.equalizeHist(gray)
-    faces = face_cascade.detectMultiScale(gray)
+    im=cv2.flip(im,1,1)
+    mini = cv2.resize(im, (im.shape[1]//4, im.shape[0]//4))
+    faces = face_cascade.detectMultiScale(mini)
     for (x,y,w,h) in faces:
         face = frame[y:y+h, x:x+w]
         if face is not None:
             face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
-            face = cv2.resize(face, (224, 224))
+            face = cv2.resize(face, (224, 224))/255
             prediction = maskNet.predict(face.reshape(1, 224, 224, 3), batch_size=32)
             for pred in prediction:
                 (mask, naked) = pred
-                label = "Mask" if mask > naked else "No Mask"
-                color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
-                label = "{}: {:.2f}%".format(label, max(mask, naked) * 100) 
-                cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
-                cv2.rectangle(frame, (x, y), (x+w, y+h), color, 2)
+                if mask > .5 or naked > .5:
+                    label = "Mask" if (mask > naked) else "No Mask"
+                    color = (0, 255, 0) if (label == "Mask") else (0, 0, 255)
+                    label = "{}: {:.2f}%".format(label, max(mask, naked) * 100) 
+                    cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
+                    cv2.rectangle(frame, (x, y), (x+w, y+h), color, 2)
 
     return frame
 
