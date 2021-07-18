@@ -37,10 +37,11 @@ duration = getenv('DEFAULT_DURATION')
 duration_uom = getenv('DEFAULT_DURATION_UOM')
 
 #models
-prototxtPath = os.path.sep.join(["./model/face_detector", "deploy.prototxt"])
-weightsPath = os.path.sep.join(["./model/face_detector", "res10_300x300_ssd_iter_140000.caffemodel"])
+#prototxtPath = os.path.sep.join(["./model/face_detector", "deploy.prototxt"])
+#weightsPath = os.path.sep.join(["./model/face_detector", "res10_300x300_ssd_iter_140000.caffemodel"])
 maskNet = load_model("./model/mask_detect")
-faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
+#faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
+face_cascade = cv2.CascadeClassifier()
 
 app = Flask(__name__)
 
@@ -98,30 +99,28 @@ def get_duration():
     return "{} {}".format(duration, duration_uom)
 
 def find_masks(frame):
-    (h, w) = frame.shape[:2]
-    blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), (104.0, 177.0, 123.0))
-    faceNet.setInput(blob)
-    detections = faceNet.forward()
-    faces = []
-    for i in range(0, detections.shape[2]):
-        confidence = detections[0, 0, i, 2]
-        if confidence > 0.5:
-            (startX, startY, endX, endY) = (detections[0, 0, i, 3:7] * np.array([w, h, w, h])).astype("int")
-            (startX, startY) = (max(0, startX), max(0, startY))
-            (endX, endY) = (min(w - 1, endX), min(h - 1, endY))
-            face = frame[startY:endY, startX:endX]
-            face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
-            face = cv2.resize(face, (224, 224))
-            face = preprocess_input(face)
-            faces.append(face)
-            prediction = maskNet.predict(faces)
-            for pred in prediction:
-                (mask, naked) = pred
-                label = "Mask" if mask > naked else "No Mask"
-                color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
-                label = "{}: {:.2f}%".format(label, max(mask, naked) * 100)
-                cv2.putText(frame, label, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
-                cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
+    #(h, w) = frame.shape[:2]
+    #blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), (104.0, 177.0, 123.0))
+    #faceNet.setInput(blob)
+    #detections = faceNet.forward()
+    #for i in range(0, detections.shape[2]):
+       # confidence = detections[0, 0, i, 2]
+       # if confidence > 0.5:
+       #     (startX, startY, endX, endY) = (detections[0, 0, i, 3:7] * np.array([w, h, w, h])).astype("int")
+       #     (startX, startY) = (max(0, startX), max(0, startY))
+       #     (endX, endY) = (min(w - 1, endX), min(h - 1, endY))
+       #     face = frame[startY:endY, startX:endX]
+       #     if face is not None and frame is not None:
+       #         face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
+       #         face = cv2.resize(face, (224, 224))
+               # prediction = maskNet.predict(face.reshape(1, 224, 224, 3), batch_size=32)
+               # for pred in prediction:
+               #     (mask, naked) = pred
+               #     label = "Mask" if mask > naked else "No Mask"
+               #     color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
+               #     label = "{}: {:.2f}%".format(label, max(mask, naked) * 100)
+               #     cv2.putText(frame, label, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
+               #     cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
     return frame
 
@@ -134,7 +133,7 @@ def generate():
             scale = 400/float(w)
             frame = cv2.resize(frame, (400, int(h*scale)), interpolation=cv2.INTER_AREA)
             frame = find_masks(frame)
-            (flag, encoded) = simplejpeg.encode_jpeg(frame)
+            (f, encoded) = cv2.imencode(".jpg", frame)
             yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encoded) + b'\r\n')
 
 @app.route("/video_feed")
@@ -142,4 +141,6 @@ def video_feed():
     return Response(generate(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=8080, use_reloader=False)
+    if not face_cascade.load(cv2.samples.findFile("haarcascade_frontalface_alt.xml")):
+        print("CANT FIND HAAR CLASSIFIER!")
+    app.run(debug=True, host="0.0.0.0", port=8080, threaded=True, use_reloader=False)
