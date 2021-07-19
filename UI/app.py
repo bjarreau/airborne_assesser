@@ -119,7 +119,7 @@ def find_masks(frame):
             print(list(maskNet.signatures.keys()))
             infer = maskNet.signatures['serving_default']
             print(infer.structured_outputs)
-            prediction = infer(face)['probs].numpy()
+            prediction = infer(face)['probs'].numpy()
             prediction = decode_predictions(prediction)
             
             for pred in prediction:
