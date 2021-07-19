@@ -16,7 +16,7 @@ from tensorflow.keras.applications.mobilenet_v2 import preprocess_input, decode_
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+#os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 load_dotenv()
 outframe = None
 url = "https://youtu.be/7PYzSXHd6U4"
