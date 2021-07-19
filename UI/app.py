@@ -11,7 +11,8 @@ import os
 from dotenv import load_dotenv
 import tensorflow as tf
 import simplejpeg
-from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+from tensorflow.python.saved_model import tag_constants
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input, decode_predict
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 
@@ -37,8 +38,9 @@ duration = getenv('DEFAULT_DURATION')
 duration_uom = getenv('DEFAULT_DURATION_UOM')
 
 #models
-maskNet = load_model("./model/mask_detect")
-face_cascade = cv2.CascadeClassifier("./model/lbpcascade_frontalface_improved.xml")
+#maskNet = load_model("./model/mask_detect")
+maskNet = tf.saved_model.load("./model/mask_detect/TRT", tags=[tag_constants.SERVING])
+face_cascade = cv2.CascadeClassifier("./model/haarcascade_frontalface_alt2.xml")
 profile_cascade = cv2.CascadeClassifier("./model/haarcascade_profileface.xml")
 
 app = Flask(__name__)
@@ -97,14 +99,13 @@ def get_duration():
     return "{} {}".format(duration, duration_uom)
 
 def find_masks(frame):
-    scale = 500/frame.shape[1]
-    frame = cv2.resize(frame, (500, int(frame.shape[0]*scale)), interpolation=cv2.INTER_AREA)
+    frame = imutils.resize(frame, width=500)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=7, minSize=(15,15), flags=cv2.CASCADE_SCALE_IMAGE)
-    #profiles = profile_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=7, minSize=(30,30), flags=cv2.CASCADE_SCALE_IMAGE)
-    #for location in profiles:
-    #    if location not in faces:
-    #        faces.append(location)
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=7, minSize=(30,30), flags=cv2.CASCADE_SCALE_IMAGE)
+    profiles = profile_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=7, minSize=(30,30), flags=cv2.CASCADE_SCALE_IMAGE)
+    for location in profiles:
+        if location not in faces:
+            faces.append(location)
     for (x,y,w,h) in faces:
         face = frame[y:y+h, x:x+w]
         if face is not None:
@@ -113,13 +114,20 @@ def find_masks(frame):
             face = img_to_array(face)
             face = np.expand_dims(face, axis=0)
             face = preprocess_input(face)
-            prediction = maskNet(face.reshape(1, 224, 224, 3), training=False)
+            face = tf.constant(face)
+            #prediction = maskNet.predict(face.reshape(1, 224, 224, 3))
+            print(list(maskNet.signatures.keys()))
+            infer = maskNet.signatures['serving_default']
+            print(infer.structured_outputs)
+            prediction = infer(face)['probs].numpy()
+            prediction = decode_predictions(prediction)
+            
             for pred in prediction:
-                (mask, naked) = pred
-                if mask > .5 or naked > .5:
-                    label = "Mask" if (mask > naked) else "No Mask"
-                    color = (0, 255, 0) if (label == "Mask") else (0, 0, 255)
-                    label = "{}: {:.2f}%".format(label, max(mask, naked) * 100) 
+                label = prediction[0][1]
+                pct = prediction[0][2]
+                if pct > .5:
+                    color = (0, 255, 0) if (label == "with_mask") else (0, 0, 255)
+                    label = "{}: {:.2f}%".format(label, pct * 100) 
                     cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
                     cv2.rectangle(frame, (x, y), (x+w, y+h), color, 2)
 
