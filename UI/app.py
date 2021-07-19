@@ -116,9 +116,9 @@ def get_duration():
     return "{} {}".format(duration, duration_uom)
 
 def find_masks(frame):
-    #(h, w) = frame.shape[:2]
-    #scale = 500/float(w)
-    #frame = cv2.resize(frame, (500, int(h*scale)), interpolation=cv2.INTER_AREA)
+    (h, w) = frame.shape[:2]
+    scale = 300/float(w)
+    frame = cv2.resize(frame, (300, int(h*scale)), interpolation=cv2.INTER_AREA)
     classes, confidences, boxes = maskNetCv2.detect(frame, 0.5, 0.5)
     for cl, score, (left, top, width, height) in zip(classes, confidences, boxes):
         if score[0] > 0.5:
@@ -128,8 +128,6 @@ def find_masks(frame):
             label = "MASK" if cl else "NO MASK"
             img = cv2.rectangle(frame, start_point, end_point, color, 2)  # draw class box
             text = "{}:{:.2f}".format(label, score[0])
-            #(test_width, text_height), baseline = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 1)
-            #end_point = (int(left + test_width + 2), int(top - text_height - 2))
             cv2.putText(frame, text, start_point, cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)  # print class type with score
             frame = cv2.rectangle(frame, start_point, end_point, color, 2)
     return frame
