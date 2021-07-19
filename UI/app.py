@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 import tensorflow as tf
 import simplejpeg
 from tensorflow.python.saved_model import tag_constants
-from tensorflow.keras.applications.mobilenet_v2 import preprocess_input, decode_predict
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input, decode_predictions
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 
