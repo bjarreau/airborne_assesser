@@ -38,7 +38,7 @@ duration_uom = getenv('DEFAULT_DURATION_UOM')
 
 #models
 maskNet = load_model("./model/mask_detect")
-face_cascade = cv2.CascadeClassifier("./model/haarcascade_frontalface_alt2.xml")
+face_cascade = cv2.CascadeClassifier("./model/lbpcascade_frontalface_improved.xml")
 profile_cascade = cv2.CascadeClassifier("./model/haarcascade_profileface.xml")
 
 app = Flask(__name__)
@@ -97,13 +97,14 @@ def get_duration():
     return "{} {}".format(duration, duration_uom)
 
 def find_masks(frame):
-    frame = imutils.resize(frame, width=500)
+    scale = 500/frame.shape[1]
+    frame = cv2.resize(frame, (500, int(frame.shape[0]*scale)), interpolation=cv2.INTER_AREA)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=7, minSize=(30,30), flags=cv2.CASCADE_SCALE_IMAGE)
-    profiles = profile_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=7, minSize=(30,30), flags=cv2.CASCADE_SCALE_IMAGE)
-    for location in profiles:
-        if location not in faces:
-            faces.append(location)
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=7, minSize=(15,15), flags=cv2.CASCADE_SCALE_IMAGE)
+    #profiles = profile_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=7, minSize=(30,30), flags=cv2.CASCADE_SCALE_IMAGE)
+    #for location in profiles:
+    #    if location not in faces:
+    #        faces.append(location)
     for (x,y,w,h) in faces:
         face = frame[y:y+h, x:x+w]
         if face is not None:
@@ -112,7 +113,7 @@ def find_masks(frame):
             face = img_to_array(face)
             face = np.expand_dims(face, axis=0)
             face = preprocess_input(face)
-            prediction = maskNet.predict(face.reshape(1, 224, 224, 3))
+            prediction = maskNet(face.reshape(1, 224, 224, 3), training=False)
             for pred in prediction:
                 (mask, naked) = pred
                 if mask > .5 or naked > .5:
