@@ -119,7 +119,7 @@ def find_masks(frame):
     (h, w) = frame.shape[:2]
     scale = 500/float(w)
     frame = cv2.resize(frame, (500, int(h*scale)), interpolation=cv2.INTER_AREA)
-    classes, confidences, boxes = maskNetCv2.detect(img, 0.5, 0.5)
+    classes, confidences, boxes = maskNetCv2.detect(frame, 0.5, 0.5)
     for cl, score, (left, top, width, height) in zip(classes, confidences, boxes):
         start_point = (int(left), int(top))
         end_point = (int(left + width), int(top + height))
