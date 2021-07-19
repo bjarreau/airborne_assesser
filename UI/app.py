@@ -9,8 +9,7 @@ import time
 from os import getenv
 import os
 from dotenv import load_dotenv
-import tensorflow as tf
-import simplejpeg
+#import tensorflow as tf
 #from tensorflow.python.saved_model import tag_constants
 #from tensorflow.keras.applications.mobilenet_v2 import preprocess_input, decode_predictions
 #from tensorflow.keras.preprocessing.image import img_to_array
@@ -53,7 +52,7 @@ duration_uom = getenv('DEFAULT_DURATION_UOM')
 weightsPath = "./model/mask_detect/yolov4-tiny-mask.weights"
 configPath = "./model/mask_detect/yolov4-tiny-mask.cfg"
 
-maskNetCv2 = cv2.dnn_DetectionModel(config_path, weights_path)
+maskNetCv2 = cv2.dnn_DetectionModel(configPath, weightsPath)
 maskNetCv2.setInputSize(416, 416)
 maskNetCv2.setInputScale(1.0 / 255)
 maskNetCv2.setInputSwapRB(True)
