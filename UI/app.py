@@ -121,48 +121,17 @@ def find_masks(frame):
     #frame = cv2.resize(frame, (500, int(h*scale)), interpolation=cv2.INTER_AREA)
     classes, confidences, boxes = maskNetCv2.detect(frame, 0.5, 0.5)
     for cl, score, (left, top, width, height) in zip(classes, confidences, boxes):
-        if score > 0.5:
+        if score[0] > 0.5:
             start_point = (int(left), int(top))
             end_point = (int(left + width), int(top + height))
-            color = (0, 255, 0) if cl else (0, 0, 255)
+            color = (0, 0, 255) if cl else (0, 255, 0)
             label = "MASK" if cl else "NO MASK"
             img = cv2.rectangle(frame, start_point, end_point, color, 2)  # draw class box
-            text = f'{label}: {score[0]:0.2f}'
-            (test_width, text_height), baseline = cv2.getTextSize(text, cv2.FONT_ITALIC, 0.6, 1)
-            end_point = (int(left + test_width + 2), int(top - text_height - 2))
-            frame = cv2.rectangle(frame, start_point, end_point, color, -1)
-            cv2.putText(frame, text, start_point, cv2.FONT_ITALIC, 0.6, color, 1)  # print class type with score
-    #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    #faces = face_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=7, minSize=(30,30), flags=cv2.CASCADE_SCALE_IMAGE)
-    #profiles = profile_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=7, minSize=(30,30), flags=cv2.CASCADE_SCALE_IMAGE)
-    #for location in profiles:
-    #    if location not in faces:
-    #        faces.append(location)
-    #for (x,y,w,h) in faces:
-    #    face = frame[y:y+h, x:x+w]
-    #    if face is not None:
-    #        face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
-    #        face = cv2.resize(face, (224, 224))
-    #        face = img_to_array(face)
-    #        face = np.expand_dims(face, axis=0)
-    #        face = preprocess_input(face)
-    #        face = tf.constant(face)
-    #        #prediction = maskNet.predict(face.reshape(1, 224, 224, 3))
-    #        prediction = frozen_func(face)[0].numpy()
-    #        print(prediction)
-    #        if len(prediction) > 0:
-    #            prediction = prediction['probs'].numpy()
-    #            prediction = decode_predictions(prediction)
-    #        
-    #            for pred in prediction:
-    #                label = prediction[0][1]
-    #                pct = prediction[0][2]
-    #                if pct > .5:
-    #                    color = (0, 255, 0) if (label == "with_mask") else (0, 0, 255)
-    #                    label = "{}: {:.2f}%".format(label, pct * 100) 
-    #                    cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
-    #                    cv2.rectangle(frame, (x, y), (x+w, y+h), color, 2)
-
+            text = "{}:{:.2f}".format(label, score[0])
+            #(test_width, text_height), baseline = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 1)
+            #end_point = (int(left + test_width + 2), int(top - text_height - 2))
+            cv2.putText(frame, text, start_point, cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)  # print class type with score
+            frame = cv2.rectangle(frame, start_point, end_point, color, 2)
     return frame
 
 def generate():
