@@ -16,6 +16,10 @@ from tensorflow.keras.applications.mobilenet_v2 import preprocess_input, decode_
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 
+physical_devices = tf.config.experimental.list_physical_devices('GPU')
+if len(physical_devices) > 0:
+  tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
 #os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 load_dotenv()
 outframe = None
@@ -121,17 +125,19 @@ def find_masks(frame):
             print(list(maskNet.signatures.keys()))
             infer = maskNet.signatures['serving_default']
             print(infer.structured_outputs)
-            prediction = infer(face)['probs'].numpy()
-            prediction = decode_predictions(prediction)
+            prediction = infer(face)
+            if len(prediction) > 0:
+                prediction = prediction['probs'].numpy()
+                prediction = decode_predictions(prediction)
             
-            for pred in prediction:
-                label = prediction[0][1]
-                pct = prediction[0][2]
-                if pct > .5:
-                    color = (0, 255, 0) if (label == "with_mask") else (0, 0, 255)
-                    label = "{}: {:.2f}%".format(label, pct * 100) 
-                    cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
-                    cv2.rectangle(frame, (x, y), (x+w, y+h), color, 2)
+                for pred in prediction:
+                    label = prediction[0][1]
+                    pct = prediction[0][2]
+                    if pct > .5:
+                        color = (0, 255, 0) if (label == "with_mask") else (0, 0, 255)
+                        label = "{}: {:.2f}%".format(label, pct * 100) 
+                        cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
+                        cv2.rectangle(frame, (x, y), (x+w, y+h), color, 2)
 
     return frame
 
