@@ -116,21 +116,22 @@ def get_duration():
     return "{} {}".format(duration, duration_uom)
 
 def find_masks(frame):
-    (h, w) = frame.shape[:2]
-    scale = 500/float(w)
-    frame = cv2.resize(frame, (500, int(h*scale)), interpolation=cv2.INTER_AREA)
+    #(h, w) = frame.shape[:2]
+    #scale = 500/float(w)
+    #frame = cv2.resize(frame, (500, int(h*scale)), interpolation=cv2.INTER_AREA)
     classes, confidences, boxes = maskNetCv2.detect(frame, 0.5, 0.5)
     for cl, score, (left, top, width, height) in zip(classes, confidences, boxes):
-        start_point = (int(left), int(top))
-        end_point = (int(left + width), int(top + height))
-        print(cl)
-        color = (0, 255, 0) if cl else (0, 0, 255)
-        #img = cv2.rectangle(frame, start_point, end_point, color, 2)  # draw class box
-        #text = f'{LABELS[cl[0]]}: {score[0]:0.2f}'
-        #(test_width, text_height), baseline = cv2.getTextSize(text, cv2.FONT_ITALIC, 0.6, 1)
-        #end_point = (int(left + test_width + 2), int(top - text_height - 2))
-        #frame = cv2.rectangle(frame, start_point, end_point, color, -1)
-        #cv2.putText(frame, text, start_point, cv2.FONT_ITALIC, 0.6, COLORS[1 - cl[0]], 1)  # print class type with score
+        if score > 0.5:
+            start_point = (int(left), int(top))
+            end_point = (int(left + width), int(top + height))
+            color = (0, 255, 0) if cl else (0, 0, 255)
+            label = "MASK" if cl else "NO MASK"
+            img = cv2.rectangle(frame, start_point, end_point, color, 2)  # draw class box
+            text = f'{label}: {score[0]:0.2f}'
+            (test_width, text_height), baseline = cv2.getTextSize(text, cv2.FONT_ITALIC, 0.6, 1)
+            end_point = (int(left + test_width + 2), int(top - text_height - 2))
+            frame = cv2.rectangle(frame, start_point, end_point, color, -1)
+            cv2.putText(frame, text, start_point, cv2.FONT_ITALIC, 0.6, color, 1)  # print class type with score
     #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     #faces = face_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=7, minSize=(30,30), flags=cv2.CASCADE_SCALE_IMAGE)
     #profiles = profile_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=7, minSize=(30,30), flags=cv2.CASCADE_SCALE_IMAGE)
