@@ -95,6 +95,25 @@ def set_duration(new_duration):
 def get_duration():
     return "{} {}".format(duration, duration_uom)
 
+#def reset_heatmap():
+#    contrast = cv2.addWeighted(image, 1 + float(-2)/100., accum_image, 0, float(-2))
+#    accum_image = cv2.blur(contrast, (55,55))
+
+#def get_mask_from_bbox(x1,y1,x2,y2):
+#    cx,cy = int(x1+(x2)/2), int(y1+(y2)/2)
+#    mask = np.zeros((height, width), np.uint8)
+#    mask = cv2.circle(mask, (x1+20,y1+20), radius_size, (75,75,75), -1)
+#    mask = cv2.blur(mask, (105,105), cv2.BORDER_DEFAULT)
+#    return mask
+        
+#def apply_color_map(x1,y1,x2,y2):
+#    if time.time() - st > duration:
+#        self.st = time.time()
+#        self.reset_heatmap()
+#    mask = get_mask_from_bbox(x1,y1,x2,y2)
+#    self.accum_image = cv2.add(accum_image, mask)
+#    self.heatmap = cv2.applyColorMap(accum_image, cv2.COLORMAP_JET)
+
 def find_masks(frame):
     classes, confidences, boxes = maskNetCv2.detect(frame, 0.5, 0.5)
     for cl, score, (left, top, width, height) in zip(classes, confidences, boxes):
@@ -107,6 +126,11 @@ def find_masks(frame):
             text = "{}:{:.2f}".format(label, score[0])
             cv2.putText(frame, text, start_point, cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)  # print class type with score
             frame = cv2.rectangle(frame, start_point, end_point, color, 2)
+            #frame = generate_heatmap(frame, obj_meta, score[0], frame_meta.pad_index)
+            #map = HMAP[stream_idx]
+            #rect_params = obj_meta.rect_params
+            #hmap.apply_color_map(left,top,left+width,top+height)
+            #frame = map.heatmap
     return frame
 
 def generate():
