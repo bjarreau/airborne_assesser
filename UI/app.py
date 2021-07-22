@@ -1,3 +1,4 @@
+# new branch test
 from flask import Flask, Response, request, render_template
 from VideoStream import VideoStream
 from LinkedStream import LinkedStream
@@ -29,16 +30,6 @@ radius_size = getenv('DEFAULT_RADIUS')
 radius_uom = getenv('DEFAULT_RADIUS_UOM')
 duration = getenv('DEFAULT_DURATION')
 duration_uom = getenv('DEFAULT_DURATION_UOM')
-
-
-weightsPath = "./model/mask_detect/yolov4-tiny-mask.weights"
-configPath = "./model/mask_detect/yolov4-tiny-mask.cfg"
-maskNetCv2 = cv2.dnn_DetectionModel(configPath, weightsPath)
-maskNetCv2.setInputSize(416, 416)
-maskNetCv2.setInputScale(1.0 / 255)
-maskNetCv2.setInputSwapRB(True)
-maskNetCv2.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-maskNetCv2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
 app = Flask(__name__)
 
@@ -115,7 +106,7 @@ def get_duration():
 #    self.heatmap = cv2.applyColorMap(accum_image, cv2.COLORMAP_JET)
 
 def find_masks(frame):
-    classes, confidences, boxes = maskNetCv2.detect(frame, 0.5, 0.5)
+    classes, confidences, boxes = maskNet.detect(frame, 0.5, 0.5)
     for cl, score, (left, top, width, height) in zip(classes, confidences, boxes):
         if score[0] > 0.5:
             start_point = (int(left), int(top))
@@ -141,12 +132,11 @@ def generate():
         c+=1
         if frame is not None:
             (h, w) = frame.shape[:2]
-            scale = 300/float(w)
-            frame = cv2.resize(frame, (300, int(h*scale)), interpolation=cv2.INTER_AREA)
-            if c%5 == 0:
-                frame = find_masks(frame)
-                (f, encoded) = cv2.imencode(".jpg", frame)
-                yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encoded) + b'\r\n')
+            scale = 400/float(w)
+            frame = cv2.resize(frame, (400, int(h*scale)), interpolation=cv2.INTER_AREA)
+            #frame = find_masks(frame)
+            (f, encoded) = cv2.imencode(".jpg", frame)
+            yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encoded) + b'\r\n')
 
 @app.route("/video_feed")
 def video_feed():
