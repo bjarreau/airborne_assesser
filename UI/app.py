@@ -105,18 +105,34 @@ def get_duration():
 #    self.accum_image = cv2.add(accum_image, mask)
 #    self.heatmap = cv2.applyColorMap(accum_image, cv2.COLORMAP_JET)
 
+mean = torch.Tensor([0.485, 0.456, 0.406]).cuda()
+std = torch.Tensor([0.229, 0.224, 0.225]).cuda()
+def preprocess(image):
+    device = torch.device('cuda')
+    image = PIL.Image.fromarray(image)
+    image = transforms.functional.to_tensor(image).to(device)
+    image.sub_(mean[:, None, None]).div_(std[:, None, None])
+    return image[None, ...]
+
 def find_masks(frame):
-    classes, confidences, boxes = maskNet.detect(frame, 0.5, 0.5)
-    for cl, score, (left, top, width, height) in zip(classes, confidences, boxes):
-        if score[0] > 0.5:
-            start_point = (int(left), int(top))
-            end_point = (int(left + width), int(top + height))
-            color = (0, 0, 255) if cl else (0, 255, 0)
-            label = "No MASK" if cl else "MASK"
-            img = cv2.rectangle(frame, start_point, end_point, color, 2)  # draw class box
-            text = "{}:{:.2f}".format(label, score[0])
-            cv2.putText(frame, text, start_point, cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)  # print class type with score
-            frame = cv2.rectangle(frame, start_point, end_point, color, 2)
+    preprocessed = preprocess(frame)
+    output = model(preprocessed)
+    output = F.softmax(output, dim=1).detach().cpu().numpy().flatten()
+    category_index = output.argmax()
+    print(output)
+    print(category_index)
+    for i, score in enumerate(list(output)):
+        print(score)
+    #for cl, score, (left, top, width, height) in zip(classes, confidences, boxes):
+    #    if score[0] > 0.5:
+    #        start_point = (int(left), int(top))
+    #        end_point = (int(left + width), int(top + height))
+    #        color = (0, 0, 255) if cl else (0, 255, 0)
+    #        label = "No MASK" if cl else "MASK"
+    #        img = cv2.rectangle(frame, start_point, end_point, color, 2)  # draw class box
+    #        text = "{}:{:.2f}".format(label, score[0])
+    #        cv2.putText(frame, text, start_point, cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)  # print class type with score
+    #        frame = cv2.rectangle(frame, start_point, end_point, color, 2)
             #frame = generate_heatmap(frame, obj_meta, score[0], frame_meta.pad_index)
             #map = HMAP[stream_idx]
             #rect_params = obj_meta.rect_params
@@ -126,15 +142,13 @@ def find_masks(frame):
 
 def generate():
     encoded = None
-    c=0
     while True:
         (conf, frame) = livestream.read() if active == "Live" else linkedstream.read()
-        c+=1
         if frame is not None:
             (h, w) = frame.shape[:2]
             scale = 400/float(w)
             frame = cv2.resize(frame, (400, int(h*scale)), interpolation=cv2.INTER_AREA)
-            #frame = find_masks(frame)
+            frame = find_masks(frame)
             (f, encoded) = cv2.imencode(".jpg", frame)
             yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encoded) + b'\r\n')
 
