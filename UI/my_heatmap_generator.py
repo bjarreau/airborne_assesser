@@ -26,5 +26,5 @@ class HMap:
 
         self.accum_image = cv2.add(self.accum_image, mask)
         self.heatmap = cv2.applyColorMap(self.accum_image, cv2.COLORMAP_JET)
-        frame = cv2.addWeighted(image, 0.7, self.heatmap, 0.5, 0)
+        frame = cv2.addWeighted(np.array(image), 0.7, self.heatmap, 0.5, 0)
         return frame
