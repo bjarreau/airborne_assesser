@@ -21,13 +21,10 @@ class HMap:
 
         # create a mask from image and add it to accum_image
         mask = np.zeros((self.height, self.width), np.uint8)
-        print(mask)
-        print(x1)
-        print(y1)
         mask = cv2.circle(mask, (x1+20, y1+20), self.radius, (75,75,75), -1)
         mask = cv2.blur(mask, (105,105), cv2.BORDER_DEFAULT)
 
         self.accum_image = cv2.add(self.accum_image, mask)
         self.heatmap = cv2.applyColorMap(self.accum_image, cv2.COLORMAP_JET)
-        frame = cv2.addWeighted(np.array(image), 0.7, self.heatmap, 0.5, 0)
+        frame = cv2.addWeighted(np.array(image), 0.9, self.heatmap, 0.2, 0)
         return frame
