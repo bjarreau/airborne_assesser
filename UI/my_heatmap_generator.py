@@ -15,7 +15,6 @@ class HMap:
 
     def apply_color_map(self, image, x1, y1):
         if time.time() - self.st > self.fade_interval:
-            self.st = time.time()
             self.accum_image = cv2.addWeighted(self.accum_image, 1, self.accum_image, 0, float(-2))
             self.accum_image = cv2.blur(self.accum_image, (55,55))
 
