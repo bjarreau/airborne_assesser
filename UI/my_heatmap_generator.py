@@ -12,11 +12,13 @@ class HMap:
         self.cy = y1
         self.label = classification
         self.st = time.time()
+        self.intensity = 0.2
 
     def apply_color_map(self, image, radius, duration):
-        if time.time() - self.st > duration:
-            self.accum_image = cv2.addWeighted(self.accum_image, 1, self.accum_image, 0, float(-2))
-            self.accum_image = cv2.blur(self.accum_image, (55,55))
+        if (time.time() - self.st) > duration:
+            print(time.time() - self.st)
+            #self.accum_image = cv2.addWeighted(self.accum_image, 1, self.accum_image, 0, float(-2))
+            #self.accum_image = cv2.blur(self.accum_image, (55,55))
 
             # create a mask from image and add it to accum_image
             mask = np.zeros((self.height, self.width), np.uint8)
@@ -25,5 +27,6 @@ class HMap:
 
             self.accum_image = cv2.add(self.accum_image, mask)
             self.heatmap = cv2.applyColorMap(self.accum_image, cv2.COLORMAP_JET)
-            image = cv2.addWeighted(np.array(image), 0.9, self.heatmap, 0.2, 0)
+            image = cv2.addWeighted(np.array(image), 0.9, self.heatmap, self.intensity, 0)
+            self.intensity = self.intensity - (self.intensity/duration)
         return image
