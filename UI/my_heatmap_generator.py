@@ -20,7 +20,7 @@ class HMap:
             alpha = 0.5 - (time_left/duration)*0.5
         image = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
         overlay = image.copy()
-        out = image.copy()
+        output = image.copy()
         cv2.circle(overlay, (self.cx+20, self.cy+20), radius, (0, 0, 255), -1)
         overlay = cv2.blur(overlay, (105,105), cv2.BORDER_DEFAULT)
         cv2.addWeighted(overlay, alpha, output, 1 - alpha, 0, output)
