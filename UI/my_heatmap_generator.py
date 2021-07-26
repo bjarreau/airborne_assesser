@@ -1,27 +1,33 @@
 import cv2
 import numpy as np
 import time
+import PIL
+from PIL import ImageDraw, ImageFilter
 
 class HMap:
-    def __init__(self, width, height, x1, y1, classification):
-        self.width = width
-        self.height = height
-        self.cx = x1
-        self.cy = y1
-        self.label = classification
+    def __init__(self, box):
+        self.box = box
         self.st = time.time()
         self.intensity = 0.5
 
-    def apply_color_map(self, image, radius, duration):
-        time_left = duration - (time.time()-self.st)
-        if time_left < 0:
-            alpha = 0
-        else:
-            alpha = 0.5*(time_left/duration)
-        image = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
-        overlay = image.copy()
-        output = image.copy()
-        cv2.circle(overlay, (self.cx+20, self.cy+20), radius, (0, 0, 255), -1)
-        overlay = cv2.blur(overlay, (105,105), cv2.BORDER_DEFAULT)
-        cv2.addWeighted(overlay, alpha, output, 1 - alpha, 0, output)
-        return output
+    def nomask_map(self, frame, radius, duration):
+        delta = time.time() - self.st
+        if delta < duration:
+            overlay_image = PIL.Image.new("RGB", frame.size, color="red")
+            img = PIL.Image.new("L", frame.size, color=0) 
+            draw = ImageDraw.Draw(img)
+            draw.ellipse([self.box[0]-radius, self.box[1]-radius, self.box[2]+radius, self.box[3]+radius], fill=128, outline=None)
+            mask_image = img.filter(ImageFilter.GaussianBlur(radius=10))
+            frame = PIL.Image.composite(overlay_image, frame, mask_image)
+        return frame
+
+    def mask_map(self, frame, radius, duration):
+        delta = time.time() - self.st
+        if delta < duration:
+            overlay_image = PIL.Image.new("RGB", frame.size, color="green") 
+            img = PIL.Image.new("L", frame.size, color=0) 
+            draw = ImageDraw.Draw(img)
+            draw.ellipse([self.box[0]-radius, self.box[1]-radius, self.box[2]+radius, self.box[3]+radius], fill=128, outline=None)
+            mask_image = img.filter(ImageFilter.GaussianBlur(radius=10))
+            frame = PIL.Image.composite(overlay_image, frame, mask_image)
+        return frame
