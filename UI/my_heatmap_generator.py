@@ -17,7 +17,7 @@ class HMap:
         if time_left < 0:
             alpha = 0
         else:
-            alpha = 0.5 - (time_left/duration)*0.5
+            alpha = 0.5*(time_left/duration)
         image = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
         overlay = image.copy()
         output = image.copy()
