@@ -15,9 +15,10 @@ class HMap:
     def apply_color_map(self, image, radius, duration):
         time_left = duration - (time.time()-self.st)
         if time_left < 0:
-            intensity = 0
+            alpha = 0
         else:
-            intensity = 0.5 - (time_left/duration)*0.5
+            alpha = 0.5 - (time_left/duration)*0.5
+        image = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
         overlay = image.copy()
         out = image.copy()
         cv2.circle(overlay, (self.cx+20, self.cy+20), radius, (0, 0, 255), -1)
