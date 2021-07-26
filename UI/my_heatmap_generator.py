@@ -6,28 +6,21 @@ class HMap:
     def __init__(self, width, height, x1, y1, classification):
         self.width = width
         self.height = height
-        #
-        #self.heatmap = np.zeros((self.height, self.width), np.uint8)
         self.cx = x1
         self.cy = y1
         self.label = classification
         self.st = time.time()
-        self.intensity = 0.2
+        self.intensity = 0.5
 
     def apply_color_map(self, image, radius, duration):
-        if (time.time() - self.st) < duration:
-            print(time.time() - self.st)
-            #self.accum_image = cv2.addWeighted(self.accum_image, 1, self.accum_image, 0, float(-2))
-            #self.accum_image = cv2.blur(self.accum_image, (55,55))
-
-            # create a mask from image and add it to accum_image
-            mask = np.zeros((self.height, self.width), np.uint8)
-            mask = cv2.circle(mask, (self.cx+20, self.cy+20), radius, (75,75,75), -1)
-            mask = cv2.blur(mask, (105,105), cv2.BORDER_DEFAULT)
-            
-            #self.accum_image = np.zeros((self.height, self.width), np.uint8)
-            #self.accum_image = cv2.add(self.accum_image, mask)
-            self.heatmap = cv2.applyColorMap(mask, cv2.COLORMAP_JET)
-            image = cv2.addWeighted(np.array(image), 0.9, self.heatmap, self.intensity, 0)
-            self.intensity = self.intensity - (self.intensity/duration)
-        return image
+        time_left = duration - (time.time()-self.st)
+        if time_left < 0:
+            intensity = 0
+        else:
+            intensity = 0.5 - (time_left/duration)*0.5
+        overlay = image.copy()
+        out = image.copy()
+        cv2.circle(overlay, (self.cx+20, self.cy+20), radius, (0, 0, 255), -1)
+        overlay = cv2.blur(overlay, (105,105), cv2.BORDER_DEFAULT)
+        cv2.addWeighted(overlay, alpha, output, 1 - alpha, 0, output)
+        return output
