@@ -10,9 +10,9 @@ class HMap:
         self.st = time.time()
         self.label = label
         if label == 0:
-            self.opacity = 128
+            self.opacity = 80
         else:
-            self.opacity = 100
+            self.opacity = 60
 
     def draw_map(self, frame, radius, duration):
         delta = time.time() - self.st
